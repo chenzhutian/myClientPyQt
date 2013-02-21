@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>960</width>
+    <height>540</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>960</width>
+    <height>540</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>960</width>
+    <height>540</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>绝望2005第三方登陆系统</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>src/logo_school.png</normaloff>src/logo_school.png</iconset>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QFrame" name="frame">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>960</width>
+      <height>540</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>960</width>
+      <height>540</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>960</width>
+      <height>540</height>
+     </size>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QGroupBox" name="cjGroupBox1">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>940</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>940</width>
+       <height>110</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>940</width>
+       <height>110</height>
+      </size>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QLabel" name="userImformationLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>921</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+      <property name="buddy">
+       <cstring>cjColumnView</cstring>
+      </property>
+     </widget>
+     <widget class="QLabel" name="xnOpptionLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>90</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>学年</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="buddy">
+       <cstring>xnOpptionComboBox</cstring>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="xnOpptionComboBox">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>73</y>
+        <width>131</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="editable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="xqOpptionLabel">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>70</y>
+        <width>90</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="text">
+       <string>学期</string>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="buddy">
+       <cstring>xqOpptioncomboBox</cstring>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="xqOpptioncomboBox">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>73</y>
+        <width>131</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="lnCjPushButton">
+      <property name="geometry">
+       <rect>
+        <x>620</x>
+        <y>70</y>
+        <width>80</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>历年成绩</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="cjGroupBox_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>940</width>
+       <height>340</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>940</width>
+       <height>340</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>940</width>
+       <height>340</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>微软雅黑</family>
+       <weight>50</weight>
+       <italic>true</italic>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="title">
+      <string>成绩</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <widget class="QColumnView" name="cjColumnView">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>921</width>
+        <height>311</height>
+       </rect>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="userGPALabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>465</y>
+       <width>940</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+     <property name="buddy">
+      <cstring>cjColumnView</cstring>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="BrowerserMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>960</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="xyMenu">
+    <property name="title">
+     <string>信息查询</string>
+    </property>
+    <addaction name="cjAction"/>
+    <addaction name="kbAction"/>
+   </widget>
+   <widget class="QMenu" name="xkMenu">
+    <property name="title">
+     <string>选课</string>
+    </property>
+    <addaction name="xsxkAction"/>
+   </widget>
+   <widget class="QMenu" name="syMenu">
+    <property name="title">
+     <string>首页</string>
+    </property>
+    <addaction name="syAction"/>
+    <addaction name="separator"/>
+    <addaction name="logoutAction"/>
+   </widget>
+   <addaction name="syMenu"/>
+   <addaction name="xyMenu"/>
+   <addaction name="xkMenu"/>
+  </widget>
+  <action name="cjAction">
+   <property name="text">
+    <string>成绩查询</string>
+   </property>
+  </action>
+  <action name="kbAction">
+   <property name="text">
+    <string>课表查询</string>
+   </property>
+  </action>
+  <action name="xsxkAction">
+   <property name="text">
+    <string>学生选课</string>
+   </property>
+  </action>
+  <action name="syAction">
+   <property name="text">
+    <string>首页</string>
+   </property>
+  </action>
+  <action name="logoutAction">
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

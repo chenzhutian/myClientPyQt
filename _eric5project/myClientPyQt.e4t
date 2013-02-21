@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Tasks SYSTEM "Tasks-5.1.dtd">
+<!-- eric5 tasks file for project myClientPyQt -->
+<!-- Saved: 2013-02-21, 12:25:39 -->
+<Tasks version="5.1">
+  <ProjectScanFilter></ProjectScanFilter>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>31</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>39</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>47</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>55</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>63</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>71</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>79</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 20:38:56</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtCjPage.py</Filename>
+      <Linenumber>87</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 21:22:54</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtLoadingPage.py</Filename>
+      <Linenumber>31</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 21:22:54</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtLoadingPage.py</Filename>
+      <Linenumber>46</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 21:22:54</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtLoadingPage.py</Filename>
+      <Linenumber>54</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2013-02-20, 21:22:54</Created>
+    <Resource>
+      <Filename>BrowerserWidgetQtLoadingPage.py</Filename>
+      <Linenumber>62</Linenumber>
+    </Resource>
+  </Task>
+</Tasks>

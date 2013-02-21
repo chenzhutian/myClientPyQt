@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file>checkCode.gif</file>
+    <file>logo_school.png</file>
+  </qresource>
+</RCC>

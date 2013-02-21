@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-5.1.dtd">
+<!-- eric5 project file for project myClientPyQt -->
+<!-- Saved: 2013-02-21, 00:27:19 -->
+<!-- Copyright (C) 2013 unhealthy, chenzhutian1992@gmail.com -->
+<Project version="5.1">
+  <Language></Language>
+  <Hash>e9668d25905cf3797a3511a73ccf7382de206057</Hash>
+  <ProgLanguage mixed="0">Python3</ProgLanguage>
+  <ProjectType>Qt4</ProjectType>
+  <Description>改用Qt来写界面</Description>
+  <Version>0.1</Version>
+  <Author>unhealthy</Author>
+  <Email>chenzhutian1992@gmail.com</Email>
+  <Sources>
+    <Source>Ui_LoginWidgetQt.py</Source>
+    <Source>LoginWidgetQt.py</Source>
+    <Source>Ui_BrowerserWidgetQt.py</Source>
+    <Source>BrowerserWidgetMainPageQt.py</Source>
+    <Source>Ui_BrowerserWidgetQtCjPage.py</Source>
+    <Source>Ui_BrowerserWidgetMainPageQt.py</Source>
+    <Source>Ui_BrowerserWidgetQtLoadingPage.py</Source>
+    <Source>myClient/__init__.py</Source>
+    <Source>myClient/BrowerserWidget.py</Source>
+    <Source>myClient/LoginWidget.py</Source>
+    <Source>myClient/MenuPath.py</Source>
+    <Source>myClient/myClient.py</Source>
+  </Sources>
+  <Forms>
+    <Form>LoginWidgetQt.ui</Form>
+    <Form>BrowerserWidgetQtCjPage.ui</Form>
+    <Form>BrowerserWidgetMainPageQt.ui</Form>
+    <Form>BrowerserWidgetQtLoadingPage.ui</Form>
+  </Forms>
+  <Translations/>
+  <Resources>
+    <Resource>src/src.qrc</Resource>
+  </Resources>
+  <Interfaces/>
+  <Others/>
+  <MainScript>myClient.py</MainScript>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES"/>
+    <FiletypeAssociation pattern="*.py" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py3" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw3" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.qm" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES"/>
+    <FiletypeAssociation pattern="*.ts" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.ui" type="FORMS"/>
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS"/>
+  </FiletypeAssociations>
+</Project>

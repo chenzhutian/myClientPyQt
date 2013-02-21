@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>960</width>
+    <height>540</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>960</width>
+    <height>540</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>960</width>
+    <height>540</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>绝望2005第三方登陆系统</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>src/logo_school.png</normaloff>src/logo_school.png</iconset>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>960</width>
+      <height>540</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QLabel" name="loadingLabel">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>130</y>
+       <width>591</width>
+       <height>180</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Kristen ITC</family>
+       <pointsize>36</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="text">
+      <string>Loading</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignHCenter|Qt::AlignTop</set>
+     </property>
+    </widget>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>240</y>
+       <width>520</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="value">
+      <number>24</number>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="BrowerserMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>960</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="xyMenu">
+    <property name="title">
+     <string>信息查询</string>
+    </property>
+    <addaction name="cjAction"/>
+    <addaction name="kbAction"/>
+   </widget>
+   <widget class="QMenu" name="xkMenu">
+    <property name="title">
+     <string>选课</string>
+    </property>
+    <addaction name="xsxkAction"/>
+   </widget>
+   <widget class="QMenu" name="syMenu">
+    <property name="title">
+     <string>首页</string>
+    </property>
+    <addaction name="syAction"/>
+    <addaction name="separator"/>
+    <addaction name="logoutAction"/>
+   </widget>
+   <addaction name="syMenu"/>
+   <addaction name="xyMenu"/>
+   <addaction name="xkMenu"/>
+  </widget>
+  <action name="cjAction">
+   <property name="text">
+    <string>成绩查询</string>
+   </property>
+  </action>
+  <action name="kbAction">
+   <property name="text">
+    <string>课表查询</string>
+   </property>
+  </action>
+  <action name="xsxkAction">
+   <property name="text">
+    <string>学生选课</string>
+   </property>
+  </action>
+  <action name="syAction">
+   <property name="text">
+    <string>首页</string>
+   </property>
+  </action>
+  <action name="logoutAction">
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
