@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\LoginWidgetQt.ui'
 #
-# Created: Thu Feb 21 12:23:48 2013
+# Created: Thu Feb 21 22:17:19 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -138,7 +138,6 @@ class Ui_loginDialog(object):
         self.loginButton.setText(_translate("loginDialog", "登陆", None))
         self.quitButton.setText(_translate("loginDialog", "退出", None))
 
-import src_rc
 
 if __name__ == "__main__":
     import sys

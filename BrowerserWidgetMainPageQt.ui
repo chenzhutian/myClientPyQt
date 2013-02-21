@@ -324,7 +324,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;学院 专业  姓名学号&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="buddy">
-         <cstring>cjTableWidget</cstring>
+         <cstring>cjTabelWidget</cstring>
         </property>
        </widget>
        <widget class="QLabel" name="xnOpptionLabel">
@@ -438,10 +438,10 @@
          <set>Qt::AlignCenter</set>
         </property>
         <property name="buddy">
-         <cstring>xqOpptioncomboBox</cstring>
+         <cstring>xqOpptionComboBox</cstring>
         </property>
        </widget>
-       <widget class="QComboBox" name="xqOpptioncomboBox">
+       <widget class="QComboBox" name="xqOpptionComboBox">
         <property name="geometry">
          <rect>
           <x>400</x>
@@ -450,6 +450,11 @@
           <height>25</height>
          </rect>
         </property>
+        <item>
+         <property name="text">
+          <string>全部学期</string>
+         </property>
+        </item>
         <item>
          <property name="text">
           <string>1</string>
@@ -521,7 +526,7 @@
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
-       <widget class="QTableWidget" name="cjTableWidget">
+       <widget class="QTableWidget" name="cjTabelWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -570,7 +575,7 @@
          <bool>true</bool>
         </attribute>
         <attribute name="horizontalHeaderCascadingSectionResizes">
-         <bool>false</bool>
+         <bool>true</bool>
         </attribute>
         <attribute name="horizontalHeaderDefaultSectionSize">
          <number>57</number>
@@ -762,21 +767,6 @@
         </column>
         <column>
          <property name="text">
-          <string>新建列</string>
-         </property>
-         <property name="font">
-          <font>
-           <family>微软雅黑</family>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="textAlignment">
-          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-         </property>
-        </column>
-        <column>
-         <property name="text">
           <string>开课学院</string>
          </property>
          <property name="font">
@@ -793,6 +783,21 @@
         <column>
          <property name="text">
           <string>备注</string>
+         </property>
+         <property name="font">
+          <font>
+           <family>微软雅黑</family>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="textAlignment">
+          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>重修标记</string>
          </property>
          <property name="font">
           <font>
@@ -908,9 +913,9 @@
  </widget>
  <tabstops>
   <tabstop>xnOpptionComboBox</tabstop>
-  <tabstop>xqOpptioncomboBox</tabstop>
+  <tabstop>xqOpptionComboBox</tabstop>
   <tabstop>lnCjPushButton</tabstop>
-  <tabstop>cjTableWidget</tabstop>
+  <tabstop>cjTabelWidget</tabstop>
   <tabstop>calendarWidget</tabstop>
  </tabstops>
  <resources/>

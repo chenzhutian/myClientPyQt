@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 """
 Module implementing MainWindow.
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.showCjdata1()
     
     @pyqtSlot(str)
-    def on_xqOpptioncomboBox_currentIndexChanged(self, p0):
+    def on_xqOpptionComboBox_currentIndexChanged(self, p0):
         """
         Slot documentation goes here.
         """
@@ -261,23 +261,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         del self.cjData
     
     def showCjdata1(self):
-        
-        Xn = self.xnOpptionComboBox. currentText()
-        Xq = self.xqOpptionComboBox. currentText()
+        Xn = self.xnOpptionComboBox.currentText()
+        Xq = self.xqOpptionComboBox.currentText()
         self.Gpa = 0
         self.Zhiy = 0
         self.Point = 0
         if self.showCjdataFlag == 0:
             self.showCjdataFlag = 1
         else:
-            self.cjTabelWidget.clearContents()
+            for i in range(1,self.iid):
+                self.cjTabelWidget.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             Xnflag = 0
             Xqflag = 0
-            if  cjdata[0] == Xn:#Xn == ' ' or Xn == '' or :
+            if  cjdata[0] == Xn:
                 Xnflag = 1
-            if cjdata[1] == Xq or Xq == ' ' : #or Xq == '' or 
+            if cjdata[1] == Xq or Xq == '全部学期' : 
                 Xqflag = 1
             if Xnflag == 1 and Xqflag == 1:
                 if cjdata[4] == '必修课' or cjdata[4] == '选修课':
@@ -285,8 +285,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                     self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
                 j = 1
+                self.cjTabelWidget.insertRow(i-1)
                 for item in cjdata:
-                    self.cjTabelWidget.setItem(i,j,QTableWidgetItem(cjdata[j]))
+                    item = QTableWidgetItem(cjdata[j-1])
+                    self.cjTabelWidget.setItem(i-1,j-1,item)
+                    j = j+1
                 i += 1
         try:
             self.Gpa = self.Gpa/self.Point
@@ -303,7 +306,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.showCjdataFlag == 0:
             self.showCjdataFlag = 1
         else:
-            self.cjTabelWidget.clearContents()
+            for i in range(1,self.iid):
+                self.cjTabelWidget.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             if cjdata[4] == '必修课' or cjdata[4] == '选修课':
@@ -311,8 +315,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                 self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
             j = 1
+            self.cjTabelWidget.insertRow(i-1)
             for item in cjdata:
-                self.cjTabelWidget.setItem(i,j,QTableWidgetItem(cjdata[j]))
+                item = QTableWidgetItem(cjdata[j-1])
+                self.cjTabelWidget.setItem(i-1,j-1,item)
+                j = j+1
             i += 1
         
         try:
@@ -340,8 +347,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return 0
         else:
             return float(s)
-    def creatXkWidget(self):
-        self.loadingPage()
+    @pyqtSlot()
+    def on_pushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        self.cjTabelWidget.removeRow(0)
+        
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
@@ -350,3 +362,5 @@ if __name__ == '__main__':
     a = MainWindow(loginW = l)
     l.loginSuccessfulSignal_NoParameters.connect(a.creatWidget,Qt.QueuedConnection) 
     sys.exit(app.exec_())
+    
+
