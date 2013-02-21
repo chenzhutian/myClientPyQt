@@ -4,13 +4,29 @@
 Module implementing MainWindow.
 """
 
-from PyQt4.QtCore import pyqtSlot, Qt
-from PyQt4.QtGui import QMainWindow, QApplication, QTableWidgetItem
+from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal
+from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
 from html.parser import HTMLParser
 import LoginWidgetQt
+
+class ProcessorThread(QThread):
+    finishLoading=pyqtSignal(int)
+
+    def __init__(self, func, args, name,parent = None):
+        super(ProcessorThread, self).__init__(parent)
+        self.func = func
+        self.args = args
+        self.name = name
+        self.moveToThread(self)
+
+    def run(self):
+        self.func(*self.args)
+        self.finishLoading.emit(2)
+        self.stop()
+        
 
 
 class CjParser(HTMLParser):
@@ -125,6 +141,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     showCjdataFlag = 0
     loadCjdataFlag = 0
     iid = 0
+    progressUpdated=pyqtSignal(int)
     
     def __init__(self, parent=None, loginW = None):
         """
@@ -135,9 +152,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loginW = loginW
         super().__init__(parent)
         self.setupUi(self)
-
-
-            
+        self.tabel = QStandardItemModel()
+        s = ['学年','学期','课程代码','课程名称','课程性质','课程归属','学分','绩点','成绩','辅修标记','补考成绩','重修成绩','开课学院','备注','重修标记','排名']
+        self.tabel.setHorizontalHeaderLabels(s)
+        self.t1 = ProcessorThread(self.loadCjdata, (), self.loadCjdata.__name__)
+        self.t1.finishLoading.connect(self.showCjPage,Qt.QueuedConnection) 
+        self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
+        
     @pyqtSlot()
     def creatWidget(self):
         if self.loginW != None:
@@ -160,14 +181,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.stackedWidget.setCurrentIndex(2)
-        self.loadCjdata()
+        if self.loadCjdataFlag == 0:
+            self.t1.start()
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(1)
+        
+    @pyqtSlot(int)
+    def showCjPage(self, index):
+        self.stackedWidget.setCurrentIndex(index)
     
+    @pyqtSlot(int)
+    def showProgressing(self, value):
+        self.progressBar.setValue(value) 
+        
     @pyqtSlot()
     def on_kbAction_triggered(self):
         """
         Slot documentation goes here.
         """
+        self.progressBar.setValue(50) 
         self.stackedWidget.setCurrentIndex(1)
     
     @pyqtSlot()
@@ -175,6 +208,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
+        self.progressBar.setValue(50) 
         self.stackedWidget.setCurrentIndex(1)
     
     @pyqtSlot()
@@ -182,6 +216,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
+        self.progressBar.setValue(50) 
         self.stackedWidget.setCurrentIndex(0)
     
     @pyqtSlot()
@@ -189,7 +224,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.stackedWidget.setCurrentIndex(1)
+        self.logout()
+        self.destroy()
     
     @pyqtSlot(str)
     def on_xnOpptionComboBox_currentIndexChanged(self, p0):
@@ -211,10 +247,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         self.showCjdata2()
+    
+    @pyqtSlot(int)
+    def updateProgress(self, value):
+        self.lblProgress=str(value)
         
     def loadCjdata(self):
-        
-        self.cjHeaders = {'Host':'jw2005.scuteo.com',
+        self.progressUpdated.emit(35)
+        cjHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
                            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                            'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
@@ -223,17 +263,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Accept-Language':'zh-CN,zh;q=0.8',
                            'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                            'Cookie':self.userCookie}
-        self.cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,headers = self.cjHeaders)
-        self.cjData = urllib.request.urlopen(url = self.cjReq)
+        cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,headers = cjHeaders)
+        cjData = urllib.request.urlopen(url = cjReq)
+        self.progressUpdated.emit(45)
         cjParser = CjParser()
-        cjParser.feed(self.cjData.read().decode('gb2312'))
-        self.userViewState = cjParser.userViewState
-        
-        self.cjBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+self.userViewState+'&hidLanguage=&ddlXN=&ddlXQ=&ddl_kcxz=&btn_zcj=%C0%FA%C4%EA%B3%C9%BC%A8'
-        self.cjBody = self.cjBody.encode('ISO-8859-1')
-        self.cjHeaders = {'Host':'jw2005.scuteo.com',
+        cjParser.feed(cjData.read().decode('gb2312'))
+        userViewState = cjParser.userViewState
+        self.progressUpdated.emit(65)
+        cjBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+userViewState+'&hidLanguage=&ddlXN=&ddlXQ=&ddl_kcxz=&btn_zcj=%C0%FA%C4%EA%B3%C9%BC%A8'
+        cjBody = cjBody.encode('ISO-8859-1')
+        cjHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
-                           'Content-Length':len(self.cjBody),
+                           'Content-Length':len(cjBody),
                            'Cache-Control':'max-age=0',
                            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                            'Origin':'http://jw2005.scuteo.com',
@@ -244,9 +285,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Accept-Language':'zh-CN,zh;q=0.8',
                            'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                            'Cookie':self.userCookie}
-        self.cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,data = self.cjBody,headers = self.cjHeaders)
-        self.cjData = urllib.request.urlopen(url = self.cjReq)
-        cjParser.feed(self.cjData.read().decode('gb2312'))
+        cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,data = cjBody,headers = cjHeaders)
+        self.progressUpdated.emit(75)
+        cjData = urllib.request.urlopen(url = cjReq)
+        self.progressUpdated.emit(99)
+        cjParser.feed(cjData.read().decode('gb2312'))
         self.xy = cjParser.xy
         self.xzb = cjParser.xzb
         self.zy = cjParser.zy
@@ -255,11 +298,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.Cj.append(cjdata)
         self.userImformationLabel.setText('     '+self.userName+'    '+self.userXm+'    '+self.xy+'     '+self.zy+'     '+self.xzb)
         del cjParser
-        del self.cjBody
-        del self.cjHeaders
-        del self.cjReq
-        del self.cjData
+        del cjBody
+        del cjHeaders
+        del cjReq
+        del cjData
     
+    def logout(self):
+        logoutHeaders = {'Host':'jw2005.scuteo.com', 
+                                    'Connection':'keep-alive', 
+                                    'Cache-Control':'max-age=0', 
+                                    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+                                    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
+                                    'Referer':self.mainUrl+self.mainPath, 
+                                    'Accept-Encoding':'gzip,deflate,sdch', 
+                                    'Accept-Language':'zh-CN,zh;q=0.8', 
+                                    'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
+                                    'Cookie':self.userCookie}
+        logoutUrl = self.mainUrl+'logout.aspx'
+        logoutReq = urllib.request.Request(url =logoutUrl,headers = logoutHeaders)
+        urllib.request.urlopen(url = logoutReq)
+        
     def showCjdata1(self):
         Xn = self.xnOpptionComboBox.currentText()
         Xq = self.xqOpptionComboBox.currentText()
@@ -270,7 +328,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.showCjdataFlag = 1
         else:
             for i in range(1,self.iid):
-                self.cjTabelWidget.removeRow(0)
+                self.tabel.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             Xnflag = 0
@@ -285,17 +343,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                     self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
                 j = 1
-                self.cjTabelWidget.insertRow(i-1)
+                self.tabel.insertRow(i-1)
                 for item in cjdata:
-                    item = QTableWidgetItem(cjdata[j-1])
-                    self.cjTabelWidget.setItem(i-1,j-1,item)
-                    j = j+1
-                i += 1
+                    item = QStandardItem(cjdata[j-1])
+                    self.tabel.setItem(i-1,j-1,item)
+                    j = j + 1
+                i =i + 1
         try:
             self.Gpa = self.Gpa/self.Point
         except:
             self.Gpa = 0
         finally:
+            self.cjTabelWidget.setModel(self.tabel)
+            self.cjTabelWidget.resizeColumnsToContents ()
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
         
@@ -307,7 +367,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.showCjdataFlag = 1
         else:
             for i in range(1,self.iid):
-                self.cjTabelWidget.removeRow(0)
+                self.tabel.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             if cjdata[4] == '必修课' or cjdata[4] == '选修课':
@@ -315,10 +375,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                 self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
             j = 1
-            self.cjTabelWidget.insertRow(i-1)
+            self.tabel.insertRow(i-1)
             for item in cjdata:
-                item = QTableWidgetItem(cjdata[j-1])
-                self.cjTabelWidget.setItem(i-1,j-1,item)
+                item = QStandardItem(cjdata[j-1])
+                self.tabel.setItem(i-1,j-1,item)
                 j = j+1
             i += 1
         
@@ -327,6 +387,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             self.Gpa = 0
         finally:
+            self.cjTabelWidget.setModel(self.tabel)
+            self.cjTabelWidget.resizeColumnsToContents ()
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
     
@@ -347,13 +409,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return 0
         else:
             return float(s)
-    @pyqtSlot()
-    def on_pushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        self.cjTabelWidget.removeRow(0)
-        
+
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)

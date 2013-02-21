@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\LoginWidgetQt.ui'
 #
-# Created: Thu Feb 21 22:17:19 2013
+# Created: Fri Feb 22 01:09:44 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,7 +35,14 @@ class Ui_loginDialog(object):
         loginDialog.setAutoFillBackground(False)
         loginDialog.setSizeGripEnabled(True)
         loginDialog.setModal(False)
-        self.LoginFrame = QtGui.QFrame(loginDialog)
+        self.stackedWidget = QtGui.QStackedWidget(loginDialog)
+        self.stackedWidget.setGeometry(QtCore.QRect(0, 0, 331, 191))
+        self.stackedWidget.setMinimumSize(QtCore.QSize(331, 191))
+        self.stackedWidget.setMaximumSize(QtCore.QSize(331, 191))
+        self.stackedWidget.setObjectName(_fromUtf8("stackedWidget"))
+        self.page = QtGui.QWidget()
+        self.page.setObjectName(_fromUtf8("page"))
+        self.LoginFrame = QtGui.QFrame(self.page)
         self.LoginFrame.setGeometry(QtCore.QRect(0, 0, 331, 191))
         self.LoginFrame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.LoginFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -118,16 +125,26 @@ class Ui_loginDialog(object):
         self.quitButton.setFont(font)
         self.quitButton.setObjectName(_fromUtf8("quitButton"))
         self.horizontalLayout.addWidget(self.quitButton)
+        self.stackedWidget.addWidget(self.page)
+        self.page_2 = QtGui.QWidget()
+        self.page_2.setObjectName(_fromUtf8("page_2"))
+        self.progressBar = QtGui.QProgressBar(self.page_2)
+        self.progressBar.setGeometry(QtCore.QRect(40, 120, 261, 31))
+        self.progressBar.setProperty("value", 24)
+        self.progressBar.setTextVisible(False)
+        self.progressBar.setObjectName(_fromUtf8("progressBar"))
+        self.stackedWidget.addWidget(self.page_2)
         self.checkCodeImageLabel.setBuddy(self.checkCodeLineEdit)
         self.userNamelabel.setBuddy(self.userNameLineEdit)
         self.userCodelabel.setBuddy(self.userCodeLineEdit)
         self.checkCodelabel.setBuddy(self.checkCodeLineEdit)
 
         self.retranslateUi(loginDialog)
-        QtCore.QObject.connect(self.quitButton, QtCore.SIGNAL(_fromUtf8("clicked()")), loginDialog.close)
         QtCore.QMetaObject.connectSlotsByName(loginDialog)
         loginDialog.setTabOrder(self.userNameLineEdit, self.userCodeLineEdit)
         loginDialog.setTabOrder(self.userCodeLineEdit, self.checkCodeLineEdit)
+        loginDialog.setTabOrder(self.checkCodeLineEdit, self.loginButton)
+        loginDialog.setTabOrder(self.loginButton, self.quitButton)
 
     def retranslateUi(self, loginDialog):
         loginDialog.setWindowTitle(_translate("loginDialog", "登陆", None))

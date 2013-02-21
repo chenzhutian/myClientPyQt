@@ -4,7 +4,7 @@
 Module implementing loginDialog.
 """
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
@@ -13,6 +13,19 @@ import urllib.error
 import MenuPath
 from html.parser import HTMLParser
 
+
+class ProcessorThread(QThread):
+
+    def __init__(self, func, args, name,parent = None):
+        super(ProcessorThread, self).__init__(parent)
+        self.func = func
+        self.args = args
+        self.name = name
+        self.moveToThread(self)
+
+    def run(self):
+        self.func(*self.args)
+        self.stop()
 
 class LoginParser(HTMLParser):
         
@@ -112,7 +125,6 @@ class loginDialog(QDialog, Ui_loginDialog):
     loginPath = 'default2.aspx'
     mainPath = ''
     loginError = 0
-    loginState = False
     menuPath = MenuPath.MenuPath()
     loginSuccessfulSignal_NoParameters = pyqtSignal() 
     
@@ -132,12 +144,18 @@ class loginDialog(QDialog, Ui_loginDialog):
         urllib.request.urlretrieve(self.mainUrl+self.checkCodePath,localjpg)
         super().__init__(parent)
         self.setupUi(self)
+        self.t1 = self.t1 = ProcessorThread(self.login, (), self.login.__name__)
     
     @pyqtSlot()
     def on_loginButton_clicked(self):
         """
         Slot documentation goes here.
         """
+        self.t1.start()
+        self.progressBar.setValue(89)
+        self.stackedWidget.setCurrentIndex(1)
+
+    def login(self):
         self.userName = self.userNameLineEdit.text()
         self.userCode = self.userCodeLineEdit.text()
         self.checkCode = self.checkCodeLineEdit.text()
@@ -155,12 +173,12 @@ class loginDialog(QDialog, Ui_loginDialog):
             bodypart2 = '&TextBox2='
             bodypart3 = '&TextBox3='
             bodypart4 = '&RadioButtonList1=%D1%A7%C9%FA&Button1=&lbLanguage='
-            self.body = bodypart1+self.userName+bodypart2+self.userCode+bodypart3+self.checkCode+bodypart4
-            self.body = self.body.encode('ISO-8859-1')
+            body = bodypart1+self.userName+bodypart2+self.userCode+bodypart3+self.checkCode+bodypart4
+            body = body.encode('ISO-8859-1')
             
-            self.headers = {'Host':'jw2005.scuteo.com',
+            headers = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
-                           'Content-Length':len(self.body),
+                           'Content-Length':len(body),
                            'Cache-Control':'max-age=0',
                            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                            'Origin':'http://jw2005.scuteo.com',
@@ -172,24 +190,24 @@ class loginDialog(QDialog, Ui_loginDialog):
                            'Accept-Chaset':'GBK,utf-8;q=0.7,*;q=0.3',
                            'Cookie':self.userCookie}
             
-            self.req = urllib.request.Request(url = self.mainUrl+self.loginPath,data = self.body,headers = self.headers)
+            req = urllib.request.Request(url = self.mainUrl+self.loginPath,data = body,headers = headers)
             try:
-                self.data = urllib.request.urlopen(url = self.req)
+                data = urllib.request.urlopen(url = req)
             except urllib.error.HTTPError as e:
-                self.loginError = e.getcode()
+                loginError = e.getcode()
+                print(loginError)
             else:
                 loginParser = LoginParser()
-                loginParser.feed(self.data.read().decode('gb2312'))
+                loginParser.feed(data.read().decode('gb2312'))
                 if loginParser.loginError != '' :
                     QMessageBox.critical(self,'错误', loginParser.loginError)
                 else:
                     self.userXm = loginParser.xm
                     self.menuPath = loginParser.path
-                    self.loginState = True
                     self.loginSuccessfulSignal_NoParameters.emit()
                     self.close()
                     self.destroy()
-
+        
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
