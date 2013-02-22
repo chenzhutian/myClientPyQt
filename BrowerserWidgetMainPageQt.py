@@ -41,7 +41,8 @@ class CjParser(HTMLParser):
     dataflag = {'span id="lbl_xy"':False,
                 'span id="lbl_zy"':False,
                 'span id="lbl_zyfx"':False,
-                'span id="lbl_xzb:':False}
+                'span id="lbl_xzb:':False, 
+                'span id="lbl_zymc"':False}
     cjData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
     Cj = []
     xy = ''
@@ -59,6 +60,9 @@ class CjParser(HTMLParser):
                         elif value == 'lbl_zy':
                             self.tagflag['span'] = True
                             self.dataflag['span id="lbl_zy"']=True
+                        elif value == 'lbl_zymc':
+                            self.tagflag['span'] = True
+                            self.dataflag['span id="lbl_zymc"']=True
                         elif value == 'lbl_zyfx':
                             self.tagflag['span'] = True
                             self.dataflag['span id="lbl_zyfx"']=True
@@ -78,8 +82,7 @@ class CjParser(HTMLParser):
                 if self.tagflag['tr']:
                     self.tagflag['td'] = True
                     self.tdIter += 1
-        else:
-            if tag == 'input':
+        elif tag == 'input':
                 for name,value in attrs:
                     if name == 'name' and value == '__VIEWSTATE':
                         self.userViewState = attrs[2][1]
@@ -114,6 +117,8 @@ class CjParser(HTMLParser):
                 self.xy = data
             elif self.dataflag['span id="lbl_zy"']:
                 self.zy = data
+            elif self.dataflag['span id="lbl_zymc"']:
+                self.zymc = data
             elif self.dataflag['span id="lbl_zyfx"']:
                 self.zyfx = data
             elif self.dataflag['span id="lbl_xzb"']:
@@ -125,6 +130,99 @@ class CjParser(HTMLParser):
         if data == ' 查询得到的数据量显示区域 ':
             self.getData = True
 
+class KbParser(HTMLParser):
+    getData = False
+    getData2 = False
+    getData3 = False
+    tdIter = 0
+    trIter = 0
+    TdIter = 0
+    TrIter = 0
+    userViewState = ''
+    Kb = []
+    kbData = ['', '', '', '', '', '', '']
+    Sjk = []
+    sjkData = ['' ,'', '' ,'' ,'', '']
+    Wap =[]
+    wapData = ['' ,'', '' ,'', '']
+    tagflag = {'span':False,
+               'td':False,
+               'tr':False,
+               'input':False, 
+               'table':False}
+    
+    def handle_starttag(self,tag,attrs):
+        if tag == 'body':
+            self.getData = True
+        if self.getData:
+            if tag == 'input':
+                for name,value in attrs:
+                    if name == 'name' and value == '__VIEWSTATE':
+                        self.userViewState = attrs[2][1]
+                        self.userViewState = urllib.parse.quote(self.userViewState, safe = '')
+                        break
+            elif tag == 'table':
+                for name,value in attrs:
+                    if name == 'id' and value == 'Table1':
+                        self.tagflag['table'] = True
+                        self.trIter = 0
+                    if name == 'id' and value == 'DataGrid1':
+                        self.tagflag['table'] = True
+                        self.TrIter = 0
+                        self.getData2 = True
+                    if name == 'id' and value == 'Datagrid2':
+                        self.tagflag['table'] = True
+                        self.TrIter = 0
+                        self.getData3 = True
+            elif tag == 'tr':
+                if self.tagflag['table']:
+                    self.tagflag['tr'] = True
+                    self.trIter += 1
+                    self.tdIter = 0
+                    if self.getData2 or self.getData3:
+                        self.TrIter += 1
+                        self.TdIter = 0
+            elif tag == 'td':
+                if self.tagflag['tr'] and self.trIter>2 and (self.trIter%2 == 1 or self.trIter == 12):
+                    self.tagflag['td'] = True
+                    self.tdIter += 1
+                if self.tagflag['tr'] and self.TrIter>1 :
+                    self.tagflag['td'] = True
+                    self.TdIter += 1
+            
+    def handle_data(self,data):
+        if self.tagflag['td']:
+            if (not self.getData2) and (not self.getData3):
+                if self.trIter == 3 or self.trIter == 7 or self.trIter ==12:
+                    if self.tdIter >2:
+                        self.kbData[self.tdIter-3] += ('n'+data)
+                else:
+                    if self.tdIter >1:
+                        self.kbData[self.tdIter-2] += data
+            if self.getData2 and not self.getData3:
+                if self.TrIter>1:
+                    self.sjkData[self.TdIter-2] += data
+            if self.getData2 and self.getData3:
+                self.wapData[self.TdIter-1] += data
+                
+    def handle_endtag(self,tag):
+        if tag == 'table':
+            self.tagflag['table'] = False
+        elif tag == 'tr':
+            self.tagflag['tr'] = False
+            if self.tagflag['table'] == True:
+                if self.tdIter>1 and not (self.getData2 or self.getData3):
+                    self.Kb.append(self.kbData)
+                    self.kbData = ['', '', '', '', '', '', '']
+                if self.TdIter>1 and self.getData2:
+                    self.Sjk.append(self.sjkData)
+                    self.sjkData = ['' ,'', '' ,'' ,'', '']
+                if self.TdIter>1 and self.getData3:
+                    self.Wap.append(self.wapData)
+                    self.wapData = ['' ,'', '' ,'', '']
+        elif tag == 'td':
+            self.tagflag['td'] = False
+            
 class MainWindow(QMainWindow, Ui_MainWindow):
     """
     Class documentation goes here.
@@ -138,6 +236,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     menuPath = MenuPath.MenuPath()
     
     Cj = []
+    Kb = []
+    Sjk = []
+    Wap = []
     showCjdataFlag = 0
     loadCjdataFlag = 0
     iid = 0
@@ -200,8 +301,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.progressBar.setValue(50) 
-        self.stackedWidget.setCurrentIndex(1)
+        self.loadKbdata()
     
     @pyqtSlot()
     def on_xsxkAction_triggered(self):
@@ -225,7 +325,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         self.logout()
-        self.destroy()
+        self.close()
     
     @pyqtSlot(str)
     def on_xnOpptionComboBox_currentIndexChanged(self, p0):
@@ -270,6 +370,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cjParser.feed(cjData.read().decode('gb2312'))
         userViewState = cjParser.userViewState
         self.progressUpdated.emit(65)
+        
         cjBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+userViewState+'&hidLanguage=&ddlXN=&ddlXQ=&ddl_kcxz=&btn_zcj=%C0%FA%C4%EA%B3%C9%BC%A8'
         cjBody = cjBody.encode('ISO-8859-1')
         cjHeaders = {'Host':'jw2005.scuteo.com',
@@ -293,31 +394,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.xy = cjParser.xy
         self.xzb = cjParser.xzb
         self.zy = cjParser.zy
+        self.zymc = cjParser.zymc
         self.zyfx = cjParser.zyfx
         for cjdata in cjParser.Cj:
             self.Cj.append(cjdata)
-        self.userImformationLabel.setText('     '+self.userName+'    '+self.userXm+'    '+self.xy+'     '+self.zy+'     '+self.xzb)
+        self.userImformationLabel.setText('    '+self.userXm+'    '+self.xy+'     '+self.zy+self.zymc+'     '+self.xzb)
         del cjParser
         del cjBody
         del cjHeaders
         del cjReq
         del cjData
     
-    def logout(self):
-        logoutHeaders = {'Host':'jw2005.scuteo.com', 
-                                    'Connection':'keep-alive', 
-                                    'Cache-Control':'max-age=0', 
-                                    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
-                                    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
-                                    'Referer':self.mainUrl+self.mainPath, 
-                                    'Accept-Encoding':'gzip,deflate,sdch', 
-                                    'Accept-Language':'zh-CN,zh;q=0.8', 
-                                    'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
-                                    'Cookie':self.userCookie}
-        logoutUrl = self.mainUrl+'logout.aspx'
-        logoutReq = urllib.request.Request(url =logoutUrl,headers = logoutHeaders)
-        urllib.request.urlopen(url = logoutReq)
-        
     def showCjdata1(self):
         Xn = self.xnOpptionComboBox.currentText()
         Xq = self.xqOpptionComboBox.currentText()
@@ -409,7 +496,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return 0
         else:
             return float(s)
-
+    def logout(self):
+        logoutHeaders = {'Host':'jw2005.scuteo.com', 
+                                    'Connection':'keep-alive', 
+                                    'Cache-Control':'max-age=0', 
+                                    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+                                    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
+                                    'Referer':self.mainUrl+self.mainPath, 
+                                    'Accept-Encoding':'gzip,deflate,sdch', 
+                                    'Accept-Language':'zh-CN,zh;q=0.8', 
+                                    'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
+                                    'Cookie':self.userCookie}
+        logoutUrl = self.mainUrl+'logout.aspx'
+        logoutReq = urllib.request.Request(url =logoutUrl,headers = logoutHeaders)
+        urllib.request.urlopen(url = logoutReq)
+    
+    def loadKbdata(self):
+        kbHeaders = {'Host':'jw2005.scuteo.com', 
+                             'Connection':'keep-alive', 
+                             'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+                             'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
+                             'Referer':self.mainUrl+self.mainPath, 
+                             'Accept-Encoding':'gzip,deflate,sdch', 
+                             'Accept-Language':'zh-CN,zh;q=0.8', 
+                             'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
+                             'Cookie':self.userCookie}
+        kbUrl = self.mainUrl+self.menuPath.xsgrkb
+        kbReq = urllib.request.Request(url =kbUrl,headers = kbHeaders)
+        kbData = urllib.request.urlopen(url = kbReq)
+        s = kbData.read().decode('gb2312')
+        kbParser = KbParser()
+        kbParser.feed(s)
+        self.Kb = kbParser.Kb
+        self.Sjk = kbParser.Sjk
+        self.Wap = kbParser.Wap
+        self.userKbViewState = kbParser.userViewState
+        print(self.Kb)
+        print(self.Sjk)
+        print(self.Wap)
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)

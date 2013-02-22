@@ -4,7 +4,7 @@
 Module implementing loginDialog.
 """
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
@@ -127,6 +127,7 @@ class loginDialog(QDialog, Ui_loginDialog):
     loginError = 0
     menuPath = MenuPath.MenuPath()
     loginSuccessfulSignal_NoParameters = pyqtSignal() 
+    loginFaledSignal_NoParameters = pyqtSignal()
     
     def __init__(self, parent=None):
         """
@@ -145,19 +146,22 @@ class loginDialog(QDialog, Ui_loginDialog):
         super().__init__(parent)
         self.setupUi(self)
         self.t1 = self.t1 = ProcessorThread(self.login, (), self.login.__name__)
+        self.loginFaledSignal_NoParameters.connect(self.loginFaled, Qt.QueuedConnection)
+        self.userName = '201130630338'
+        self.userCode = '230059'
     
+    @pyqtSlot()
+    def loginFaled(self):
+        self.stackedWidget.setCurrentIndex(0)
+        QMessageBox.critical(self,'错误', self.loginError)
+        
     @pyqtSlot()
     def on_loginButton_clicked(self):
         """
         Slot documentation goes here.
         """
-        self.t1.start()
-        self.progressBar.setValue(89)
-        self.stackedWidget.setCurrentIndex(1)
-
-    def login(self):
-        self.userName = self.userNameLineEdit.text()
-        self.userCode = self.userCodeLineEdit.text()
+        #self.userName = self.userNameLineEdit.text()
+        #self.userCode = self.userCodeLineEdit.text()
         self.checkCode = self.checkCodeLineEdit.text()
         
         if len(self.userName) != 12:
@@ -167,6 +171,12 @@ class loginDialog(QDialog, Ui_loginDialog):
         elif len(self.checkCode) != 5:
             QMessageBox.critical(self,'错误','验证码不正确')
         else:
+            self.t1.start()
+            self.progressBar.setValue(89)
+            self.stackedWidget.setCurrentIndex(1)
+
+    def login(self):
+
             self.mainPath = 'xs_main.aspx?xh='+self.userName
             
             bodypart1 = '__VIEWSTATE=dDwtMTg3MTM5OTI5MTs7PkfLdDpkwXkZwjVjoRLwfK%2BL%2FuEU&TextBox1='
@@ -194,13 +204,15 @@ class loginDialog(QDialog, Ui_loginDialog):
             try:
                 data = urllib.request.urlopen(url = req)
             except urllib.error.HTTPError as e:
-                loginError = e.getcode()
-                print(loginError)
+                self.loginError = e.getcode()
+                print(self.loginError)
             else:
                 loginParser = LoginParser()
                 loginParser.feed(data.read().decode('gb2312'))
                 if loginParser.loginError != '' :
-                    QMessageBox.critical(self,'错误', loginParser.loginError)
+                    self.loginError = loginParser.loginError
+                    self.loginFaledSignal_NoParameters.emit()
+                    self.t1.stop()
                 else:
                     self.userXm = loginParser.xm
                     self.menuPath = loginParser.path
