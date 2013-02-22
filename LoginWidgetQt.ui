@@ -303,5 +303,22 @@
   <tabstop>quitButton</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>quitButton</sender>
+   <signal>clicked()</signal>
+   <receiver>loginDialog</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>219</x>
+     <y>152</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>244</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

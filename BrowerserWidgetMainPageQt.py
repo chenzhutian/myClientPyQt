@@ -134,22 +134,29 @@ class KbParser(HTMLParser):
     getData = False
     getData2 = False
     getData3 = False
+    getData4 = False
     tdIter = 0
     trIter = 0
     TdIter = 0
     TrIter = 0
     userViewState = ''
+    xnd = []
+    xqd = []
     Kb = []
     kbData = ['', '', '', '', '', '', '']
     Sjk = []
     sjkData = ['' ,'', '' ,'' ,'', '']
+    Sxk = []
+    sxkData = ['' ,'' ,'' ,'', '', '', '']
     Wap =[]
     wapData = ['' ,'', '' ,'', '']
     tagflag = {'span':False,
                'td':False,
                'tr':False,
                'input':False, 
-               'table':False}
+               'table':False, 
+               'select':0, 
+               'option':0}
     
     def handle_starttag(self,tag,attrs):
         if tag == 'body':
@@ -170,16 +177,38 @@ class KbParser(HTMLParser):
                         self.tagflag['table'] = True
                         self.TrIter = 0
                         self.getData2 = True
+                    if name == 'id' and value == 'DBGridYxkc':
+                        self.tagflag['table'] = True
+                        self.TrIter = 0
+                        self.getData2 = False
+                        self.getData4 = True
                     if name == 'id' and value == 'Datagrid2':
                         self.tagflag['table'] = True
                         self.TrIter = 0
+                        self.getData4 = False
                         self.getData3 = True
+            elif tag == 'select':
+                for name, value in attrs:
+                    if name == 'name' and value == 'xnd':
+                        self.tagflag['select'] =1
+                    if name == 'name' and value == 'xqd':
+                        self.tagflag['select'] = 2
+            elif tag == 'option':
+                if self.tagflag['select'] == 1:
+                    for name, value in attrs:
+                        if name == 'value':
+                           self.xnd.append(value) 
+                elif self.tagflag['select'] == 2:
+                    for name, value in attrs:
+                        if name == 'value':
+                            self.xqd.append(value)
+
             elif tag == 'tr':
                 if self.tagflag['table']:
                     self.tagflag['tr'] = True
                     self.trIter += 1
                     self.tdIter = 0
-                    if self.getData2 or self.getData3:
+                    if self.getData2 or self.getData3 or self.getData4:
                         self.TrIter += 1
                         self.TdIter = 0
             elif tag == 'td':
@@ -192,18 +221,22 @@ class KbParser(HTMLParser):
             
     def handle_data(self,data):
         if self.tagflag['td']:
-            if (not self.getData2) and (not self.getData3):
+            if (not self.getData2) and (not self.getData3)and(not self.getData4):
                 if self.trIter == 3 or self.trIter == 7 or self.trIter ==12:
                     if self.tdIter >2:
-                        self.kbData[self.tdIter-3] += ('n'+data)
+                        self.kbData[self.tdIter-3] += ('\n'+data)
                 else:
                     if self.tdIter >1:
-                        self.kbData[self.tdIter-2] += data
-            if self.getData2 and not self.getData3:
+                        self.kbData[self.tdIter-2] += ('\n'+data)
+            if self.getData2:
                 if self.TrIter>1:
-                    self.sjkData[self.TdIter-2] += data
-            if self.getData2 and self.getData3:
-                self.wapData[self.TdIter-1] += data
+                    self.sjkData[self.TdIter-1] += data
+            if self.getData3:
+                if self.TrIter>1:
+                    self.wapData[self.TdIter-1] += data
+            if self.getData4:
+                if self.TrIter>1:
+                    self.sxkData[self.TdIter-1] += data
                 
     def handle_endtag(self,tag):
         if tag == 'table':
@@ -211,7 +244,7 @@ class KbParser(HTMLParser):
         elif tag == 'tr':
             self.tagflag['tr'] = False
             if self.tagflag['table'] == True:
-                if self.tdIter>1 and not (self.getData2 or self.getData3):
+                if self.tdIter>1 and not (self.getData2 or self.getData3 or self.getData4):
                     self.Kb.append(self.kbData)
                     self.kbData = ['', '', '', '', '', '', '']
                 if self.TdIter>1 and self.getData2:
@@ -220,6 +253,10 @@ class KbParser(HTMLParser):
                 if self.TdIter>1 and self.getData3:
                     self.Wap.append(self.wapData)
                     self.wapData = ['' ,'', '' ,'', '']
+                if self.TdIter>1 and self.getData4:
+                    self.Sxk.append(self.sxkData)
+                    self.sxkData = ['' ,'' ,'' ,'', '', '', '']
+                    
         elif tag == 'td':
             self.tagflag['td'] = False
             
@@ -253,9 +290,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loginW = loginW
         super().__init__(parent)
         self.setupUi(self)
-        self.tabel = QStandardItemModel()
+        
+        self.cjTable = QStandardItemModel()
         s = ['学年','学期','课程代码','课程名称','课程性质','课程归属','学分','绩点','成绩','辅修标记','补考成绩','重修成绩','开课学院','备注','重修标记','排名']
-        self.tabel.setHorizontalHeaderLabels(s)
+        self.cjTable.setHorizontalHeaderLabels(s)
+        for i in range(0, 16):
+            self.cjTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter) 
+            
+        self.kbTable = QStandardItemModel()
+        s = ['周一','周二', '周三', '周四', '周五', '周六', '周日']
+        self.kbTable.setHorizontalHeaderLabels(s)
+        s = ['\n第1节\n8:50-9:35\n\n\n第2节\n9:40-10:25\n' ,'\n第3节\n10:40-11:25\n\n\n第4节\n11:30-12:15\n','\n第5节\n14:00-14:45\n\n\n第6节\n14:50-15:35\n', '\n第7节\n15:45-16:30\n\n\n第8节\n16:35-17:20\n', '\n第9节\n', '\n第10节\n19:00-19:45\n\n第11节\n19:50-20:35\n\n第12节\n20:40-21:25\n']
+        self.kbTable.setVerticalHeaderLabels(s)
+        for i in range(0, 6):
+            self.kbTable.verticalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+            
+        self.sjkTable = QStandardItemModel()
+        s = ['课程名称', '教师', '学分','起止周', '上课时间', '上课地点']
+        self.sjkTable.setHorizontalHeaderLabels(s)
+        for i in range(0, 6):
+            self.sjkTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+        
+        self.wapTable = QStandardItemModel()
+        s = ['学年', '学期', '课程名称', '教师姓名', '学分']
+        self.wapTable.setHorizontalHeaderLabels(s)
+        for i in range(0, 5):
+            self.wapTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+            
         self.t1 = ProcessorThread(self.loadCjdata, (), self.loadCjdata.__name__)
         self.t1.finishLoading.connect(self.showCjPage,Qt.QueuedConnection) 
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
@@ -415,7 +476,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.showCjdataFlag = 1
         else:
             for i in range(1,self.iid):
-                self.tabel.removeRow(0)
+                self.cjTable.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             Xnflag = 0
@@ -430,10 +491,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                     self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
                 j = 1
-                self.tabel.insertRow(i-1)
-                for item in cjdata:
-                    item = QStandardItem(cjdata[j-1])
-                    self.tabel.setItem(i-1,j-1,item)
+                self.cjTable.insertRow(i-1)
+                for data in cjdata:
+                    item = QStandardItem(data)
+                    self.cjTable.setItem(i-1,j-1,item)
                     j = j + 1
                 i =i + 1
         try:
@@ -441,7 +502,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             self.Gpa = 0
         finally:
-            self.cjTabelWidget.setModel(self.tabel)
+            self.cjTabelWidget.setModel(self.cjTable)
             self.cjTabelWidget.resizeColumnsToContents ()
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
@@ -454,7 +515,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.showCjdataFlag = 1
         else:
             for i in range(1,self.iid):
-                self.tabel.removeRow(0)
+                self.cjTable.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             if cjdata[4] == '必修课' or cjdata[4] == '选修课':
@@ -462,10 +523,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                 self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
             j = 1
-            self.tabel.insertRow(i-1)
-            for item in cjdata:
-                item = QStandardItem(cjdata[j-1])
-                self.tabel.setItem(i-1,j-1,item)
+            self.cjTable.insertRow(i-1)
+            for data in cjdata:
+                item = QStandardItem(data)
+                self.cjTable.setItem(i-1,j-1,item)
                 j = j+1
             i += 1
         
@@ -474,7 +535,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             self.Gpa = 0
         finally:
-            self.cjTabelWidget.setModel(self.tabel)
+            self.cjTabelWidget.setModel(self.cjTable)
             self.cjTabelWidget.resizeColumnsToContents ()
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
@@ -531,9 +592,66 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Sjk = kbParser.Sjk
         self.Wap = kbParser.Wap
         self.userKbViewState = kbParser.userViewState
-        print(self.Kb)
-        print(self.Sjk)
-        print(self.Wap)
+        self.kbXnComboBox.addItems(kbParser.xnd)
+        self.kbXqComboBox.addItems(kbParser.xqd)
+        self.showKbdata()
+        
+    def showKbdata(self):
+        i = 0
+        for kbdata in self.Kb:
+            j = 0
+            for data in kbdata:
+                item = QStandardItem(data)
+                item.setTextAlignment(Qt.AlignCenter)
+                self.kbTable.setItem(i,j,item)
+                j +=1
+            if i ==5:
+                break
+            i +=1
+        self.kbTableView.setModel(self.kbTable)
+        self.kbTableView.resizeColumnsToContents ()
+        self.kbTableView.resizeRowsToContents()
+        
+        i = 0
+        for sjkdata in self.Sjk:
+            j = 0
+            for data in sjkdata:
+                item = QStandardItem(data)
+                item.setTextAlignment(Qt.AlignCenter)
+                self.sjkTable.setItem(i, j, item)
+                j +=1
+            i +=1
+        self.sjkTableView.setModel(self.sjkTable)
+        self.sjkTableView.resizeColumnsToContents ()
+        self.sjkTableView.resizeRowsToContents()
+
+        i = 0
+        for wapdata in self.Wap:
+            j = 0
+            for data in wapdata:
+                item = QStandardItem(data)
+                item.setTextAlignment(Qt.AlignCenter)
+                self.wapTable.setItem(i, j, item)
+                j +=1
+            i +=1
+        self.wapTableView.setModel(self.wapTable)
+        self.wapTableView.resizeColumnsToContents ()
+        self.wapTableView.resizeRowsToContents()
+    @pyqtSlot(str)
+    def on_kbXnComboBox_currentIndexChanged(self, p0):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        raise NotImplementedError
+    
+    @pyqtSlot(str)
+    def on_kbXqComboBox_currentIndexChanged(self, p0):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        raise NotImplementedError
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)

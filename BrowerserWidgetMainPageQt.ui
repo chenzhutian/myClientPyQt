@@ -611,50 +611,46 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QComboBox" name="comboBox">
+      <widget class="QComboBox" name="kbXnComboBox">
        <property name="geometry">
         <rect>
-         <x>200</x>
+         <x>250</x>
          <y>10</y>
-         <width>69</width>
-         <height>22</height>
+         <width>100</width>
+         <height>20</height>
         </rect>
        </property>
       </widget>
-      <widget class="QComboBox" name="comboBox_2">
+      <widget class="QComboBox" name="kbXqComboBox">
        <property name="geometry">
         <rect>
-         <x>380</x>
+         <x>520</x>
          <y>10</y>
-         <width>69</width>
-         <height>22</height>
+         <width>100</width>
+         <height>20</height>
         </rect>
        </property>
       </widget>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="kbXnLabel">
        <property name="geometry">
         <rect>
-         <x>120</x>
+         <x>170</x>
          <y>10</y>
-         <width>54</width>
-         <height>12</height>
+         <width>80</width>
+         <height>16</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>12</pointsize>
+        </font>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string>学年</string>
        </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>310</x>
-         <y>10</y>
-         <width>54</width>
-         <height>12</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>TextLabel</string>
+       <property name="buddy">
+        <cstring>kbXnComboBox</cstring>
        </property>
       </widget>
       <widget class="QTabWidget" name="tabWidget">
@@ -662,53 +658,123 @@
         <rect>
          <x>10</x>
          <y>40</y>
-         <width>981</width>
-         <height>501</height>
+         <width>980</width>
+         <height>500</height>
         </rect>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
-         <string>Tab 1</string>
+         <string>一周课表</string>
         </attribute>
-        <widget class="QTableView" name="tableView">
+        <widget class="QTableView" name="kbTableView">
          <property name="geometry">
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>981</width>
-           <height>481</height>
+           <width>980</width>
+           <height>480</height>
           </rect>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="textElideMode">
+          <enum>Qt::ElideMiddle</enum>
          </property>
         </widget>
        </widget>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
-         <string>Tab 2</string>
+         <string>实践课信息</string>
         </attribute>
-        <widget class="QTableView" name="tableView_2">
+        <widget class="QTableView" name="sjkTableView">
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>40</y>
-           <width>981</width>
-           <height>231</height>
+           <y>50</y>
+           <width>980</width>
+           <height>230</height>
           </rect>
          </property>
         </widget>
        </widget>
        <widget class="QWidget" name="tab_3">
         <attribute name="title">
-         <string>页</string>
+         <string>实习课信息</string>
         </attribute>
+        <widget class="QTableView" name="sxkTableView">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>50</y>
+           <width>980</width>
+           <height>230</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
        <widget class="QWidget" name="tab_4">
         <attribute name="title">
-         <string>页</string>
+         <string>未安排上课时间的课程</string>
         </attribute>
+        <widget class="QTableView" name="wapTableView">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>50</y>
+           <width>980</width>
+           <height>230</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
+      </widget>
+      <widget class="QLabel" name="kbXqLabel">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>10</y>
+         <width>80</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>学期</string>
+       </property>
+       <property name="buddy">
+        <cstring>kbXqComboBox</cstring>
+       </property>
+      </widget>
+      <widget class="QLabel" name="kbImformationLabel">
+       <property name="geometry">
+        <rect>
+         <x>680</x>
+         <y>10</y>
+         <width>200</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>谁谁谁的课表</string>
+       </property>
+       <property name="buddy">
+        <cstring>kbTableView</cstring>
+       </property>
       </widget>
      </widget>
     </widget>
@@ -782,11 +848,18 @@
   </action>
  </widget>
  <tabstops>
+  <tabstop>calendarWidget</tabstop>
   <tabstop>xnOpptionComboBox</tabstop>
   <tabstop>xqOpptionComboBox</tabstop>
   <tabstop>lnCjPushButton</tabstop>
   <tabstop>cjTabelWidget</tabstop>
-  <tabstop>calendarWidget</tabstop>
+  <tabstop>kbXnComboBox</tabstop>
+  <tabstop>kbXqComboBox</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>kbTableView</tabstop>
+  <tabstop>sjkTableView</tabstop>
+  <tabstop>sxkTableView</tabstop>
+  <tabstop>wapTableView</tabstop>
  </tabstops>
  <resources/>
  <connections/>

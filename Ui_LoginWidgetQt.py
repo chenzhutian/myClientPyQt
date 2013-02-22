@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\LoginWidgetQt.ui'
 #
-# Created: Fri Feb 22 01:09:44 2013
+# Created: Fri Feb 22 22:21:46 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -140,6 +140,7 @@ class Ui_loginDialog(object):
         self.checkCodelabel.setBuddy(self.checkCodeLineEdit)
 
         self.retranslateUi(loginDialog)
+        QtCore.QObject.connect(self.quitButton, QtCore.SIGNAL(_fromUtf8("clicked()")), loginDialog.close)
         QtCore.QMetaObject.connectSlotsByName(loginDialog)
         loginDialog.setTabOrder(self.userNameLineEdit, self.userCodeLineEdit)
         loginDialog.setTabOrder(self.userCodeLineEdit, self.checkCodeLineEdit)
