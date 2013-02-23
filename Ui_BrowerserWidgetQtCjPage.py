@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\BrowerserWidgetQtCjPage.ui'
 #
-# Created: Thu Feb 21 22:17:19 2013
+# Created: Sat Feb 23 12:57:07 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -101,10 +101,20 @@ class Ui_MainWindow(object):
         self.cjGroupBox_2.setFont(font)
         self.cjGroupBox_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.cjGroupBox_2.setObjectName(_fromUtf8("cjGroupBox_2"))
-        self.cjColumnView = QtGui.QColumnView(self.cjGroupBox_2)
-        self.cjColumnView.setGeometry(QtCore.QRect(10, 20, 921, 311))
-        self.cjColumnView.setFrameShadow(QtGui.QFrame.Sunken)
-        self.cjColumnView.setObjectName(_fromUtf8("cjColumnView"))
+        self.cjTableWidget = QtGui.QTableWidget(self.cjGroupBox_2)
+        self.cjTableWidget.setGeometry(QtCore.QRect(10, 20, 921, 311))
+        self.cjTableWidget.setFrameShadow(QtGui.QFrame.Sunken)
+        self.cjTableWidget.setRowCount(5)
+        self.cjTableWidget.setColumnCount(5)
+        self.cjTableWidget.setObjectName(_fromUtf8("cjTableWidget"))
+        item = QtGui.QTableWidgetItem()
+        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        item.setBackground(brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        item.setForeground(brush)
+        self.cjTableWidget.setItem(0, 0, item)
         self.userGPALabel = QtGui.QLabel(self.frame)
         self.userGPALabel.setGeometry(QtCore.QRect(10, 465, 940, 31))
         self.userGPALabel.setObjectName(_fromUtf8("userGPALabel"))
@@ -141,10 +151,9 @@ class Ui_MainWindow(object):
         self.BrowerserMenuBar.addAction(self.syMenu.menuAction())
         self.BrowerserMenuBar.addAction(self.xyMenu.menuAction())
         self.BrowerserMenuBar.addAction(self.xkMenu.menuAction())
-        self.userImformationLabel.setBuddy(self.cjColumnView)
+        self.userImformationLabel.setBuddy(self.cjTableWidget)
         self.xnOpptionLabel.setBuddy(self.xnOpptionComboBox)
         self.xqOpptionLabel.setBuddy(self.xqOpptioncomboBox)
-        self.userGPALabel.setBuddy(self.cjColumnView)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -156,6 +165,11 @@ class Ui_MainWindow(object):
         self.xqOpptionLabel.setText(_translate("MainWindow", "学期", None))
         self.lnCjPushButton.setText(_translate("MainWindow", "历年成绩", None))
         self.cjGroupBox_2.setTitle(_translate("MainWindow", "成绩", None))
+        __sortingEnabled = self.cjTableWidget.isSortingEnabled()
+        self.cjTableWidget.setSortingEnabled(False)
+        item = self.cjTableWidget.item(0, 0)
+        item.setText(_translate("MainWindow", "111222", None))
+        self.cjTableWidget.setSortingEnabled(__sortingEnabled)
         self.userGPALabel.setText(_translate("MainWindow", "TextLabel", None))
         self.xyMenu.setTitle(_translate("MainWindow", "信息查询", None))
         self.xkMenu.setTitle(_translate("MainWindow", "选课", None))

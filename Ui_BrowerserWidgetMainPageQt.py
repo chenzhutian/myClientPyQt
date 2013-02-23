@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\BrowerserWidgetMainPageQt.ui'
 #
-# Created: Fri Feb 22 23:33:26 2013
+# Created: Sat Feb 23 11:21:22 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -245,7 +245,7 @@ class Ui_MainWindow(object):
         self.tab = QtGui.QWidget()
         self.tab.setObjectName(_fromUtf8("tab"))
         self.kbTableView = QtGui.QTableView(self.tab)
-        self.kbTableView.setGeometry(QtCore.QRect(0, 0, 980, 480))
+        self.kbTableView.setGeometry(QtCore.QRect(0, 0, 975, 480))
         self.kbTableView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.kbTableView.setTextElideMode(QtCore.Qt.ElideMiddle)
         self.kbTableView.setObjectName(_fromUtf8("kbTableView"))

@@ -4,7 +4,7 @@
 Module implementing loginDialog.
 """
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
@@ -25,7 +25,7 @@ class ProcessorThread(QThread):
 
     def run(self):
         self.func(*self.args)
-        self.stop()
+        self.exit()
 
 class LoginParser(HTMLParser):
         
@@ -128,6 +128,7 @@ class loginDialog(QDialog, Ui_loginDialog):
     menuPath = MenuPath.MenuPath()
     loginSuccessfulSignal_NoParameters = pyqtSignal() 
     loginFaledSignal_NoParameters = pyqtSignal()
+    loginFinished_NoParameters = pyqtSignal() 
     
     def __init__(self, parent=None):
         """
@@ -145,8 +146,13 @@ class loginDialog(QDialog, Ui_loginDialog):
         urllib.request.urlretrieve(self.mainUrl+self.checkCodePath,localjpg)
         super().__init__(parent)
         self.setupUi(self)
+        
         self.t1 = self.t1 = ProcessorThread(self.login, (), self.login.__name__)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
+        
         self.loginFaledSignal_NoParameters.connect(self.loginFaled, Qt.QueuedConnection)
+        self.loginSuccessfulSignal_NoParameters .connect(self.loginSuccessful, Qt.QueuedConnection)
         self.userName = '201130630338'
         self.userCode = '230059'
     
@@ -154,6 +160,15 @@ class loginDialog(QDialog, Ui_loginDialog):
     def loginFaled(self):
         self.stackedWidget.setCurrentIndex(0)
         QMessageBox.critical(self,'错误', self.loginError)
+    
+    @pyqtSlot()
+    def loginAgain(self):
+        self.t1.quit()
+        self.t1.start()
+    
+    def loginSuccessful(self):
+        self.timer.stop()
+        self.loginFinished_NoParameters.emit()
         
     @pyqtSlot()
     def on_loginButton_clicked(self):
@@ -172,11 +187,12 @@ class loginDialog(QDialog, Ui_loginDialog):
             QMessageBox.critical(self,'错误','验证码不正确')
         else:
             self.t1.start()
+            self.timer.start(2000)
             self.progressBar.setValue(89)
             self.stackedWidget.setCurrentIndex(1)
 
+            
     def login(self):
-
             self.mainPath = 'xs_main.aspx?xh='+self.userName
             
             bodypart1 = '__VIEWSTATE=dDwtMTg3MTM5OTI5MTs7PkfLdDpkwXkZwjVjoRLwfK%2BL%2FuEU&TextBox1='

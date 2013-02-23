@@ -4,30 +4,32 @@
 Module implementing MainWindow.
 """
 
-from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal
-from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem
+from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer
+from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
 from html.parser import HTMLParser
 import LoginWidgetQt
 
+
 class ProcessorThread(QThread):
     finishLoading=pyqtSignal(int)
 
-    def __init__(self, func, args, name,parent = None):
+    def __init__(self, func = None, args = None, name = None,page = 0, parent = None):
         super(ProcessorThread, self).__init__(parent)
-        self.func = func
-        self.args = args
-        self.name = name
         self.moveToThread(self)
 
     def run(self):
         self.func(*self.args)
-        self.finishLoading.emit(2)
-        self.stop()
+        self.finishLoading.emit(self.page)
+        self.exit()
         
-
+    def setThread(self, func, args, name, page):
+        self.func = func
+        self.args = args
+        self.name = name
+        self.page = page
 
 class CjParser(HTMLParser):
     getData = False
@@ -271,13 +273,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     userXm = ''
     mainPath = ''
     menuPath = MenuPath.MenuPath()
+    bgRGB = MenuPath.RGBdata()
     
     Cj = []
     Kb = []
     Sjk = []
     Wap = []
-    showCjdataFlag = 0
     loadCjdataFlag = 0
+    loadKbdataFlag = 0
     iid = 0
     progressUpdated=pyqtSignal(int)
     
@@ -317,8 +320,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in range(0, 5):
             self.wapTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
             
-        self.t1 = ProcessorThread(self.loadCjdata, (), self.loadCjdata.__name__)
-        self.t1.finishLoading.connect(self.showCjPage,Qt.QueuedConnection) 
+        self.t1 = ProcessorThread()
+        self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
         
     @pyqtSlot()
@@ -344,13 +349,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         if self.loadCjdataFlag == 0:
+            self.loadCjdataFlag = 1
+            self.t1.setThread(self.loadCjdata, (), self.loadCjdata.__name__, 2)
             self.t1.start()
+            self.timer.start(5000)
             self.stackedWidget.setCurrentIndex(1)
         else:
-            self.stackedWidget.setCurrentIndex(1)
+            self.stackedWidget.setCurrentIndex(2)
         
     @pyqtSlot(int)
-    def showCjPage(self, index):
+    def showPage(self, index):
+        if index == 3:
+            self.showKbdata()
+        self.timer.stop()
         self.stackedWidget.setCurrentIndex(index)
     
     @pyqtSlot(int)
@@ -362,7 +373,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.loadKbdata()
+        if self.loadKbdataFlag == 0:
+            self.loadKbdataFlag = 1
+            self.t1.setThread(self.loadKbdata, (), self.loadKbdata.__name__, 3)
+            self.t1.start()
+            self.timer.start(4000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(3)
     
     @pyqtSlot()
     def on_xsxkAction_triggered(self):
@@ -377,7 +395,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.progressBar.setValue(50) 
         self.stackedWidget.setCurrentIndex(0)
     
     @pyqtSlot()
@@ -412,8 +429,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @pyqtSlot(int)
     def updateProgress(self, value):
         self.lblProgress=str(value)
-        
+    
+    def loginAgain(self):
+        print('asdf')
+        self.t1.quit()
+        self.t1.start()
     def loadCjdata(self):
+        for i in range(1, 34):
+            self.progressUpdated.emit(i)
         self.progressUpdated.emit(35)
         cjHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
@@ -450,8 +473,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,data = cjBody,headers = cjHeaders)
         self.progressUpdated.emit(75)
         cjData = urllib.request.urlopen(url = cjReq)
-        self.progressUpdated.emit(99)
+        self.progressUpdated.emit(90)
         cjParser.feed(cjData.read().decode('gb2312'))
+        self.progressUpdated.emit(99)
         self.xy = cjParser.xy
         self.xzb = cjParser.xzb
         self.zy = cjParser.zy
@@ -472,11 +496,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Gpa = 0
         self.Zhiy = 0
         self.Point = 0
-        if self.showCjdataFlag == 0:
-            self.showCjdataFlag = 1
-        else:
-            for i in range(1,self.iid):
-                self.cjTable.removeRow(0)
+#        if self.showCjdataFlag == 0:
+#            self.showCjdataFlag = 1
+#        else:
+        for i in range(1,self.iid):
+            self.cjTable.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             Xnflag = 0
@@ -511,11 +535,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Gpa = 0
         self.Zhiy = 0
         self.Point = 0
-        if self.showCjdataFlag == 0:
-            self.showCjdataFlag = 1
-        else:
-            for i in range(1,self.iid):
-                self.cjTable.removeRow(0)
+#        if self.showCjdataFlag == 0:
+#            self.showCjdataFlag = 1
+#        else:
+        for i in range(1,self.iid):
+            self.cjTable.removeRow(0)
         i = 1
         for cjdata in self.Cj:
             if cjdata[4] == '必修课' or cjdata[4] == '选修课':
@@ -573,6 +597,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         urllib.request.urlopen(url = logoutReq)
     
     def loadKbdata(self):
+        self.progressUpdated.emit(30)
         kbHeaders = {'Host':'jw2005.scuteo.com', 
                              'Connection':'keep-alive', 
                              'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
@@ -586,6 +611,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         kbReq = urllib.request.Request(url =kbUrl,headers = kbHeaders)
         kbData = urllib.request.urlopen(url = kbReq)
         s = kbData.read().decode('gb2312')
+        self.progressUpdated.emit(80)
         kbParser = KbParser()
         kbParser.feed(s)
         self.Kb = kbParser.Kb
@@ -594,14 +620,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.userKbViewState = kbParser.userViewState
         self.kbXnComboBox.addItems(kbParser.xnd)
         self.kbXqComboBox.addItems(kbParser.xqd)
-        self.showKbdata()
+        self.progressUpdated.emit(99)
+
         
     def showKbdata(self):
         i = 0
         for kbdata in self.Kb:
             j = 0
             for data in kbdata:
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
                 item = QStandardItem(data)
+                item.setFont(font)
+                if  not data =='':
+                    brush = QBrush(QColor(self.bgRGB.bgRGB[i+j]))
+                    brush.setStyle(Qt.SolidPattern)
+                    item.setBackground(brush)
+                brush = QBrush(QColor(255, 255, 255))
+                brush.setStyle(Qt.SolidPattern)
+                item.setForeground(brush)
                 item.setTextAlignment(Qt.AlignCenter)
                 self.kbTable.setItem(i,j,item)
                 j +=1
@@ -609,20 +647,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 break
             i +=1
         self.kbTableView.setModel(self.kbTable)
-        self.kbTableView.resizeColumnsToContents ()
+        self.kbTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         self.kbTableView.resizeRowsToContents()
         
-        i = 0
+        i =0
         for sjkdata in self.Sjk:
             j = 0
             for data in sjkdata:
                 item = QStandardItem(data)
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
+                item = QStandardItem(data)
+                item.setFont(font)
                 item.setTextAlignment(Qt.AlignCenter)
                 self.sjkTable.setItem(i, j, item)
                 j +=1
             i +=1
         self.sjkTableView.setModel(self.sjkTable)
-        self.sjkTableView.resizeColumnsToContents ()
+        self.sjkTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         self.sjkTableView.resizeRowsToContents()
 
         i = 0
@@ -630,12 +673,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             j = 0
             for data in wapdata:
                 item = QStandardItem(data)
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
+                item = QStandardItem(data)
+                item.setFont(font)
                 item.setTextAlignment(Qt.AlignCenter)
                 self.wapTable.setItem(i, j, item)
                 j +=1
             i +=1
         self.wapTableView.setModel(self.wapTable)
-        self.wapTableView.resizeColumnsToContents ()
+        self.wapTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         self.wapTableView.resizeRowsToContents()
     @pyqtSlot(str)
     def on_kbXnComboBox_currentIndexChanged(self, p0):
@@ -643,7 +691,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         # TODO: not implemented yet
-        raise NotImplementedError
     
     @pyqtSlot(str)
     def on_kbXqComboBox_currentIndexChanged(self, p0):
@@ -651,14 +698,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         # TODO: not implemented yet
-        raise NotImplementedError
+
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
     l = LoginWidgetQt.loginDialog()
     l.show()
     a = MainWindow(loginW = l)
-    l.loginSuccessfulSignal_NoParameters.connect(a.creatWidget,Qt.QueuedConnection) 
+    l.loginFinished_NoParameters.connect(a.creatWidget,Qt.QueuedConnection) 
     sys.exit(app.exec_())
     
 
