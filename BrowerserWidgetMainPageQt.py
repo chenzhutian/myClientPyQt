@@ -189,22 +189,21 @@ class KbParser(HTMLParser):
                         self.TrIter = 0
                         self.getData4 = False
                         self.getData3 = True
-            elif tag == 'select':
-                for name, value in attrs:
-                    if name == 'name' and value == 'xnd':
-                        self.tagflag['select'] =1
-                    if name == 'name' and value == 'xqd':
-                        self.tagflag['select'] = 2
-            elif tag == 'option':
-                if self.tagflag['select'] == 1:
-                    for name, value in attrs:
-                        if name == 'value':
-                           self.xnd.append(value) 
-                elif self.tagflag['select'] == 2:
-                    for name, value in attrs:
-                        if name == 'value':
-                            self.xqd.append(value)
-
+#            elif tag == 'select':
+#                for name, value in attrs:
+#                    if name == 'name' and value == 'xnd':
+#                        self.tagflag['select'] =1
+#                    if name == 'name' and value == 'xqd':
+#                        self.tagflag['select'] = 2
+#            elif tag == 'option':
+#                if self.tagflag['select'] == 1:
+#                    for name, value in attrs:
+#                        if name == 'value':
+#                           self.xnd.append(value) 
+#                elif self.tagflag['select'] == 2:
+#                    for name, value in attrs:
+#                        if name == 'value':
+#                            self.xqd.append(value)
             elif tag == 'tr':
                 if self.tagflag['table']:
                     self.tagflag['tr'] = True
@@ -258,9 +257,61 @@ class KbParser(HTMLParser):
                 if self.TdIter>1 and self.getData4:
                     self.Sxk.append(self.sxkData)
                     self.sxkData = ['' ,'' ,'' ,'', '', '', '']
-                    
         elif tag == 'td':
             self.tagflag['td'] = False
+
+class YxkcParser(HTMLParser):
+    getData = False
+    tdIter = 0
+    trIter = 0
+    userViewState = ''
+    tagflag = {'table':False,
+               'td':False,
+               'tr':False,
+               'input':False}
+    yxkcData = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+    Yxkc = []
+    def handle_starttag(self,tag,attrs):
+        if self.getData:
+            if tag == 'table':
+                for name, value in attrs:
+                    if name == 'id' and value == 'DBGrid':
+                        self.tagflag['table'] = True
+                        self.trIter = 0
+            elif tag == 'tr':
+                if self.tagflag['table']:
+                    self.tagflag['tr'] = True
+                    self.tdIter = 0
+                    self.trIter += 1
+            elif tag == 'td':
+                if self.tagflag['tr']:
+                    self.tagflag['td'] = True
+                    self.tdIter += 1
+        elif tag == 'input':
+                for name,value in attrs:
+                    if name == 'name' and value == '__VIEWSTATE':
+                        self.userViewState = attrs[2][1]
+                        self.userViewState = urllib.parse.quote(self.userViewState, safe = '')
+                        break
+
+    def handle_endtag(self,tag):
+        if tag == 'table':
+            self.tagflag['table'] = False
+        elif tag == 'tr':
+            self.tagflag['tr'] = False
+            if self.trIter > 1:
+                self.Yxkc.append(self.yxkcData)
+            self.yxkcData = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+        elif tag == 'td':
+            self.tagflag['td'] = False
+            
+    def handle_data(self,data):
+        if self.tagflag['td']:
+            self.yxkcData[self.tdIter-1] = data
+
+    def handle_comment(self,data):
+        if data == ' 查询得到的数据量显示区域 ':
+            self.getData = True
             
 class MainWindow(QMainWindow, Ui_MainWindow):
     """
@@ -279,8 +330,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     Kb = []
     Sjk = []
     Wap = []
+    Yxkc = []
     loadCjdataFlag = 0
     loadKbdataFlag = 0
+    loadYxkcdataFlag = 0
     iid = 0
     progressUpdated=pyqtSignal(int)
     
@@ -319,6 +372,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.wapTable.setHorizontalHeaderLabels(s)
         for i in range(0, 5):
             self.wapTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+        
+        self.yxkcTable = QStandardItemModel()
+        s = [ '课程名称', '课程性质', '是否选课', '教师姓名', '学分', '周学时', '上课时间', '上课地点', '选课课号']
+        self.yxkcTable.setHorizontalHeaderLabels(s)
+        for i in range(0, 8):
+            self.yxkcTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
             
         self.t1 = ProcessorThread()
         self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
@@ -336,7 +395,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mainPath = self.loginW.mainPath
             self.menuPath = self.loginW.menuPath
             self.userXm = self.loginW.userXm
-            self.userWelcomeLabel.setText(self.userName+'      '+self.userXm)
+            self.welcomePageLabel.setText(self.userName+'      '+self.userXm+'\n绝望2005第三方登陆系统欢迎你~')
             del self.loginW
             self.show()
         else:
@@ -349,10 +408,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         if self.loadCjdataFlag == 0:
-            self.loadCjdataFlag = 1
             self.t1.setThread(self.loadCjdata, (), self.loadCjdata.__name__, 2)
             self.t1.start()
-            self.timer.start(5000)
+            self.timer.start(11000)
             self.stackedWidget.setCurrentIndex(1)
         else:
             self.stackedWidget.setCurrentIndex(2)
@@ -361,6 +419,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def showPage(self, index):
         if index == 3:
             self.showKbdata()
+        elif index == 4:
+            self.showYxkcdata()
         self.timer.stop()
         self.stackedWidget.setCurrentIndex(index)
     
@@ -374,10 +434,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         if self.loadKbdataFlag == 0:
-            self.loadKbdataFlag = 1
             self.t1.setThread(self.loadKbdata, (), self.loadKbdata.__name__, 3)
             self.t1.start()
-            self.timer.start(4000)
+            self.timer.start(8000)
             self.stackedWidget.setCurrentIndex(1)
         else:
             self.stackedWidget.setCurrentIndex(3)
@@ -387,9 +446,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.progressBar.setValue(50) 
-        self.stackedWidget.setCurrentIndex(1)
-    
+        if self.loadYxkcdataFlag == 0:
+            self.t1.setThread(self.loadYxkcdata, (), self.loadYxkcdata.__name__, 4)
+            self.t1.start()
+            self.timer.start(8000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(4)
+        
     @pyqtSlot()
     def on_zyAction_triggered(self):
         """
@@ -435,8 +499,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.t1.quit()
         self.t1.start()
     def loadCjdata(self):
-        for i in range(1, 34):
-            self.progressUpdated.emit(i)
         self.progressUpdated.emit(35)
         cjHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
@@ -448,7 +510,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                            'Cookie':self.userCookie}
         cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,headers = cjHeaders)
-        cjData = urllib.request.urlopen(url = cjReq)
+        cjData = urllib.request.urlopen(url = cjReq, timeout = 5)
         self.progressUpdated.emit(45)
         cjParser = CjParser()
         cjParser.feed(cjData.read().decode('gb2312'))
@@ -472,7 +534,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Cookie':self.userCookie}
         cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,data = cjBody,headers = cjHeaders)
         self.progressUpdated.emit(75)
-        cjData = urllib.request.urlopen(url = cjReq)
+        cjData = urllib.request.urlopen(url = cjReq, timeout = 5)
         self.progressUpdated.emit(90)
         cjParser.feed(cjData.read().decode('gb2312'))
         self.progressUpdated.emit(99)
@@ -489,6 +551,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         del cjHeaders
         del cjReq
         del cjData
+        self.loadCjdataFlag = 1
     
     def showCjdata1(self):
         Xn = self.xnOpptionComboBox.currentText()
@@ -526,8 +589,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             self.Gpa = 0
         finally:
-            self.cjTabelWidget.setModel(self.cjTable)
-            self.cjTabelWidget.resizeColumnsToContents ()
+            self.cjTabelView.setModel(self.cjTable)
+            self.cjTabelView.resizeColumnsToContents ()
+            #self.kbTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
         
@@ -559,8 +623,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             self.Gpa = 0
         finally:
-            self.cjTabelWidget.setModel(self.cjTable)
-            self.cjTabelWidget.resizeColumnsToContents ()
+            self.cjTabelView.setModel(self.cjTable)
+            self.cjTabelView.resizeColumnsToContents ()
+            #self.kbTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
     
@@ -597,7 +662,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         urllib.request.urlopen(url = logoutReq)
     
     def loadKbdata(self):
-        self.progressUpdated.emit(30)
+        self.progressUpdated.emit(20)
         kbHeaders = {'Host':'jw2005.scuteo.com', 
                              'Connection':'keep-alive', 
                              'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
@@ -609,21 +674,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              'Cookie':self.userCookie}
         kbUrl = self.mainUrl+self.menuPath.xsgrkb
         kbReq = urllib.request.Request(url =kbUrl,headers = kbHeaders)
-        kbData = urllib.request.urlopen(url = kbReq)
+        kbData = urllib.request.urlopen(url = kbReq,  timeout = 7)
+        self.progressUpdated.emit(60)
         s = kbData.read().decode('gb2312')
         self.progressUpdated.emit(80)
         kbParser = KbParser()
         kbParser.feed(s)
+        self.progressUpdated.emit(99)
         self.Kb = kbParser.Kb
         self.Sjk = kbParser.Sjk
         self.Wap = kbParser.Wap
         self.userKbViewState = kbParser.userViewState
-        self.kbXnComboBox.addItems(kbParser.xnd)
-        self.kbXqComboBox.addItems(kbParser.xqd)
-        self.progressUpdated.emit(99)
+        #self.kbXnComboBox.addItems(kbParser.xnd)
+        #self.kbXqComboBox.addItems(kbParser.xqd)
+
 
         
     def showKbdata(self):
+        temp = []
         i = 0
         for kbdata in self.Kb:
             j = 0
@@ -633,11 +701,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 font.setPointSize(12)
                 item = QStandardItem(data)
                 item.setFont(font)
+                t = data[: data.find('\n', 1)]
+                if not t in temp:
+                    temp.append(t)
+                t = temp.index(t)
                 if  not data =='':
-                    brush = QBrush(QColor(self.bgRGB.bgRGB[i+j]))
+                    brush = QBrush(QColor(self.bgRGB.bgRGB[t]))
                     brush.setStyle(Qt.SolidPattern)
                     item.setBackground(brush)
-                brush = QBrush(QColor(255, 255, 255))
+                brush = QBrush(QColor(self.bgRGB.fgRGB[t]))
                 brush.setStyle(Qt.SolidPattern)
                 item.setForeground(brush)
                 item.setTextAlignment(Qt.AlignCenter)
@@ -666,7 +738,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i +=1
         self.sjkTableView.setModel(self.sjkTable)
         self.sjkTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
-        self.sjkTableView.resizeRowsToContents()
+        #self.sjkTableView.resizeRowsToContents()
+
 
         i = 0
         for wapdata in self.Wap:
@@ -684,22 +757,65 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i +=1
         self.wapTableView.setModel(self.wapTable)
         self.wapTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
-        self.wapTableView.resizeRowsToContents()
-    @pyqtSlot(str)
-    def on_kbXnComboBox_currentIndexChanged(self, p0):
-        """
-        Slot documentation goes here.
-        """
-        # TODO: not implemented yet
-    
-    @pyqtSlot(str)
-    def on_kbXqComboBox_currentIndexChanged(self, p0):
-        """
-        Slot documentation goes here.
-        """
-        # TODO: not implemented yet
+        #self.wapTableView.resizeRowsToContents()
+        self.loadKbdataFlag = 1
+        self.kbImformationLabel.setText('本学期     '+self.userXm +'   的个人课表')
+        
+    def loadYxkcdata(self):
+        #self.progressUpdated.emit(20)
+        yxkcHeaders = {'Host':'jw2005.scuteo.com', 
+                             'Connection':'keep-alive', 
+                             'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+                             'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
+                             'Referer':self.mainUrl+self.mainPath, 
+                             'Accept-Encoding':'gzip,deflate,sdch', 
+                             'Accept-Language':'zh-CN,zh;q=0.8', 
+                             'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
+                             'Cookie':self.userCookie}
+        yxkcUrl = self.mainUrl+self.menuPath.xsxkqkcx
+        yxkcReq = urllib.request.Request(url =yxkcUrl,headers = yxkcHeaders)
+        yxkcData = urllib.request.urlopen(url = yxkcReq,  timeout = 7)
+        self.progressUpdated.emit(60)
+        s = yxkcData.read().decode('gb2312')
+        self.progressUpdated.emit(80)
+        yxkcParser = YxkcParser()
+        yxkcParser.feed(s)
+        self.Yxkc = yxkcParser.Yxkc
+        self.userYxkcViewState = yxkcParser.userViewState
+        self.loadYxkcdataFlag = 1
+        
+    def showYxkcdata(self):
+        i = 0
+        for yxkcdata in self.Yxkc:
+            j = 0
+            for data in yxkcdata:
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
+                item = QStandardItem(data)
+                item.setFont(font)
+                if  i%2 ==1:
+                    brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
+                    brush.setStyle(Qt.SolidPattern)
+                    item.setBackground(brush)
+#                brush = QBrush(QColor(255, 255, 255))
+#                brush.setStyle(Qt.SolidPattern)
+#                item.setForeground(brush)
+                item.setTextAlignment(Qt.AlignCenter)
+                if j == 0:
+                    self.yxkcTable.setItem(i,8,item)
+                else:
+                    self.yxkcTable.setItem(i,j-1,item)
+                j +=1
+                if j>8:
+                    break
+            i +=1
+        self.yxkcTableView.setModel(self.yxkcTable)
+        self.yxkcTableView.resizeColumnsToContents ()
+        self.yxkcTableView.resizeRowsToContents()
 
-if __name__ == '__main__':
+        
+def main():
     import sys
     app = QApplication(sys.argv)
     l = LoginWidgetQt.loginDialog()
@@ -709,3 +825,5 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
     
 
+if __name__ == '__main__':
+    main()

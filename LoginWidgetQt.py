@@ -5,7 +5,7 @@ Module implementing loginDialog.
 """
 
 from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer
-from PyQt4.QtGui import QDialog, QApplication, QMessageBox
+from PyQt4.QtGui import QDialog, QApplication, QMessageBox, QPixmap
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
 import urllib.parse
@@ -128,7 +128,9 @@ class loginDialog(QDialog, Ui_loginDialog):
     menuPath = MenuPath.MenuPath()
     loginSuccessfulSignal_NoParameters = pyqtSignal() 
     loginFaledSignal_NoParameters = pyqtSignal()
-    loginFinished_NoParameters = pyqtSignal() 
+    loginFinished_NoParameters = pyqtSignal()
+    initialFinished_NoParameters = pyqtSignal()
+    timer = QTimer()
     
     def __init__(self, parent=None):
         """
@@ -136,29 +138,26 @@ class loginDialog(QDialog, Ui_loginDialog):
         
         @param parent reference to the parent widget (QWidget)
         """
-        f = urllib.request.urlopen('http://jw2005.scuteo.com/')
-        p = (urllib.parse.urlparse(f.geturl()))[2]
-        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
-        Cookie = f.info()['Set-Cookie']
-        self.userCookie = Cookie[:Cookie.find(';')]
-        self.loginParser = LoginParser()
-        localjpg = "./src/"+('checkCode.gif')
-        urllib.request.urlretrieve(self.mainUrl+self.checkCodePath,localjpg)
         super().__init__(parent)
         self.setupUi(self)
+        self.stackedWidget.setCurrentIndex(1)
+        self.t1 = ProcessorThread(self.initialLogin, (), self.initialLogin.__name__)
+        self.t1.start()
         
-        self.t1 = self.t1 = ProcessorThread(self.login, (), self.login.__name__)
-        self.timer = QTimer()
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
-        
         self.loginFaledSignal_NoParameters.connect(self.loginFaled, Qt.QueuedConnection)
         self.loginSuccessfulSignal_NoParameters .connect(self.loginSuccessful, Qt.QueuedConnection)
-        self.userName = '201130630338'
-        self.userCode = '230059'
+        self.initialFinished_NoParameters.connect(self.initialFinished, Qt.QueuedConnection)
+    
+    @pyqtSlot()
+    def initialFinished(self):
+        self.checkCodeImageLabel.setPixmap(QPixmap("src/checkCode.gif"))
+        self.stackedWidget.setCurrentIndex(0)
     
     @pyqtSlot()
     def loginFaled(self):
         self.stackedWidget.setCurrentIndex(0)
+        self.timer.stop()
         QMessageBox.critical(self,'错误', self.loginError)
     
     @pyqtSlot()
@@ -166,6 +165,7 @@ class loginDialog(QDialog, Ui_loginDialog):
         self.t1.quit()
         self.t1.start()
     
+    @pyqtSlot()
     def loginSuccessful(self):
         self.timer.stop()
         self.loginFinished_NoParameters.emit()
@@ -175,8 +175,8 @@ class loginDialog(QDialog, Ui_loginDialog):
         """
         Slot documentation goes here.
         """
-        #self.userName = self.userNameLineEdit.text()
-        #self.userCode = self.userCodeLineEdit.text()
+        self.userName = self.userNameLineEdit.text()
+        self.userCode = self.userCodeLineEdit.text()
         self.checkCode = self.checkCodeLineEdit.text()
         
         if len(self.userName) != 12:
@@ -186,6 +186,7 @@ class loginDialog(QDialog, Ui_loginDialog):
         elif len(self.checkCode) != 5:
             QMessageBox.critical(self,'错误','验证码不正确')
         else:
+            self.t1 = ProcessorThread(self.login, (), self.login.__name__)
             self.t1.start()
             self.timer.start(2000)
             self.progressBar.setValue(89)
@@ -218,7 +219,7 @@ class loginDialog(QDialog, Ui_loginDialog):
             
             req = urllib.request.Request(url = self.mainUrl+self.loginPath,data = body,headers = headers)
             try:
-                data = urllib.request.urlopen(url = req)
+                data = urllib.request.urlopen(url = req, timeout = 1)
             except urllib.error.HTTPError as e:
                 self.loginError = e.getcode()
                 print(self.loginError)
@@ -235,7 +236,21 @@ class loginDialog(QDialog, Ui_loginDialog):
                     self.loginSuccessfulSignal_NoParameters.emit()
                     self.close()
                     self.destroy()
-        
+    
+    def initialLogin(self):
+        self.progressBar.setValue(50)
+        f = urllib.request.urlopen('http://jw2005.scuteo.com/')
+        p = (urllib.parse.urlparse(f.geturl()))[2]
+        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
+        Cookie = f.info()['Set-Cookie']
+        self.userCookie = Cookie[:Cookie.find(';')]
+        self.loginParser = LoginParser()
+        localjpg = "src/checkCode.gif"
+        urllib.request.urlretrieve(self.mainUrl+self.checkCodePath,localjpg)
+        self.progressBar.setValue(99)
+        self.initialFinished_NoParameters.emit()
+
+
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)

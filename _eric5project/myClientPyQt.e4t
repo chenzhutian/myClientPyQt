@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-5.1.dtd">
 <!-- eric5 tasks file for project myClientPyQt -->
-<!-- Saved: 2013-02-23, 14:27:00 -->
+<!-- Saved: 2013-02-26, 17:56:49 -->
 <Tasks version="5.1">
   <ProjectScanFilter></ProjectScanFilter>
   <Task priority="1" completed="False" type="1">
@@ -110,24 +110,6 @@
     <Resource>
       <Filename>BrowerserWidgetQtLoadingPage.py</Filename>
       <Linenumber>62</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" type="1">
-    <Summary>TODO: not implemented yet</Summary>
-    <Description></Description>
-    <Created>2013-02-23, 14:25:28</Created>
-    <Resource>
-      <Filename>BrowerserWidgetMainPageQt.py</Filename>
-      <Linenumber>693</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" type="1">
-    <Summary>TODO: not implemented yet</Summary>
-    <Description></Description>
-    <Created>2013-02-23, 14:25:28</Created>
-    <Resource>
-      <Filename>BrowerserWidgetMainPageQt.py</Filename>
-      <Linenumber>700</Linenumber>
     </Resource>
   </Task>
 </Tasks>

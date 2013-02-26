@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\LoginWidgetQt.ui'
 #
-# Created: Fri Feb 22 22:21:46 2013
+# Created: Tue Feb 26 12:59:53 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -133,6 +133,17 @@ class Ui_loginDialog(object):
         self.progressBar.setProperty("value", 24)
         self.progressBar.setTextVisible(False)
         self.progressBar.setObjectName(_fromUtf8("progressBar"))
+        self.label = QtGui.QLabel(self.page_2)
+        self.label.setGeometry(QtCore.QRect(80, 50, 191, 51))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Comic Sans MS"))
+        font.setPointSize(28)
+        font.setBold(False)
+        font.setItalic(True)
+        font.setWeight(50)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName(_fromUtf8("label"))
         self.stackedWidget.addWidget(self.page_2)
         self.checkCodeImageLabel.setBuddy(self.checkCodeLineEdit)
         self.userNamelabel.setBuddy(self.userNameLineEdit)
@@ -155,6 +166,7 @@ class Ui_loginDialog(object):
         self.checkCodelabel.setText(_translate("loginDialog", "验证码", None))
         self.loginButton.setText(_translate("loginDialog", "登陆", None))
         self.quitButton.setText(_translate("loginDialog", "退出", None))
+        self.label.setText(_translate("loginDialog", "Loading...", None))
 
 
 if __name__ == "__main__":
