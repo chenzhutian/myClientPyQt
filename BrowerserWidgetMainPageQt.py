@@ -5,7 +5,7 @@ Module implementing MainWindow.
 """
 
 from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer
-from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor
+from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor, QPlastiqueStyle
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
@@ -495,9 +495,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lblProgress=str(value)
     
     def loginAgain(self):
-        print('asdf')
         self.t1.quit()
         self.t1.start()
+        
     def loadCjdata(self):
         self.progressUpdated.emit(35)
         cjHeaders = {'Host':'jw2005.scuteo.com',
@@ -581,6 +581,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.cjTable.insertRow(i-1)
                 for data in cjdata:
                     item = QStandardItem(data)
+                    font = QFont()
+                    font.setFamily("微软雅黑")
+                    font.setPointSize(12)
+                    item = QStandardItem(data)
+                    item.setFont(font)
+                    if  i%2 ==1:
+                        brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
+                        brush.setStyle(Qt.SolidPattern)
+                        item.setBackground(brush)
                     self.cjTable.setItem(i-1,j-1,item)
                     j = j + 1
                 i =i + 1
@@ -614,6 +623,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cjTable.insertRow(i-1)
             for data in cjdata:
                 item = QStandardItem(data)
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
+                item = QStandardItem(data)
+                item.setFont(font)
+                if  i%2 ==1:
+                    brush = QBrush(QColor(self.bgRGB.bgRGB[3]))
+                    brush.setStyle(Qt.SolidPattern)
+                    item.setBackground(brush)
                 self.cjTable.setItem(i-1,j-1,item)
                 j = j+1
             i += 1
@@ -646,6 +664,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return 0
         else:
             return float(s)
+            
     def logout(self):
         logoutHeaders = {'Host':'jw2005.scuteo.com', 
                                     'Connection':'keep-alive', 
@@ -762,7 +781,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.kbImformationLabel.setText('本学期     '+self.userXm +'   的个人课表')
         
     def loadYxkcdata(self):
-        #self.progressUpdated.emit(20)
+        self.progressUpdated.emit(20)
         yxkcHeaders = {'Host':'jw2005.scuteo.com', 
                              'Connection':'keep-alive', 
                              'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
@@ -822,6 +841,7 @@ def main():
     l.show()
     a = MainWindow(loginW = l)
     l.loginFinished_NoParameters.connect(a.creatWidget,Qt.QueuedConnection) 
+    app.setStyle(QPlastiqueStyle());
     sys.exit(app.exec_())
     
 

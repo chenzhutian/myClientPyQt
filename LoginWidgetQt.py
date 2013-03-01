@@ -4,14 +4,30 @@
 Module implementing loginDialog.
 """
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer
-from PyQt4.QtGui import QDialog, QApplication, QMessageBox, QPixmap
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer, QPlastiqueStyle
+from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
 import urllib.parse
 import urllib.error
 import MenuPath
 from html.parser import HTMLParser
+import http.client
+
+#class SmartRedirectHandler(urllib.request.HTTPRedirectHandler):
+#     
+#    
+#    def http_error_302(self, req, fp, code, msg, headers):
+#        pass
+#        p = headers["Location"]
+#        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
+#        print(self.mainUrl)
+#        self.cookies = headers['Set-Cookie']
+#        self.cookies = self.cookies[:self.cookies.find(';')]
+#        print(self.cookies)
+#        #result = urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)                                      
+#        print('a')
+#        return
 
 
 class ProcessorThread(QThread):
@@ -25,7 +41,7 @@ class ProcessorThread(QThread):
 
     def run(self):
         self.func(*self.args)
-        self.exit()
+        self.destroy()
 
 class LoginParser(HTMLParser):
         
@@ -122,10 +138,11 @@ class loginDialog(QDialog, Ui_loginDialog):
     mainUrl = ''
     userXm = ''
     checkCodePath = 'CheckCode.aspx'
-    loginPath = 'default2.aspx'
-    mainPath = ''
+    loginPath = 'default3.aspx'
+    mainPath = 'xs_main.aspx?xh='
     loginError = 0
     menuPath = MenuPath.MenuPath()
+    loginTimes = 0
     loginSuccessfulSignal_NoParameters = pyqtSignal() 
     loginFaledSignal_NoParameters = pyqtSignal()
     loginFinished_NoParameters = pyqtSignal()
@@ -141,18 +158,29 @@ class loginDialog(QDialog, Ui_loginDialog):
         super().__init__(parent)
         self.setupUi(self)
         self.stackedWidget.setCurrentIndex(1)
-        self.t1 = ProcessorThread(self.initialLogin, (), self.initialLogin.__name__)
-        self.t1.start()
         
+#        conn = http.client.HTTPConnection('jw2005.scuteo.com')
+#        conn.request('GET', '')
+#        r1 = conn.getresponse()
+#        p = r1.getheader('Location')
+#        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
+#        Cookie = r1.getheader('Set-Cookie')
+#        self.userCookie = Cookie[:Cookie.find(';')]
+        
+        self.loginParser = LoginParser()
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
         self.loginFaledSignal_NoParameters.connect(self.loginFaled, Qt.QueuedConnection)
         self.loginSuccessfulSignal_NoParameters .connect(self.loginSuccessful, Qt.QueuedConnection)
         self.initialFinished_NoParameters.connect(self.initialFinished, Qt.QueuedConnection)
+        self.t1 = ProcessorThread(self.initialLogin, (), self.initialLogin.__name__)
+        self.t1.start()
+
     
     @pyqtSlot()
     def initialFinished(self):
-        self.checkCodeImageLabel.setPixmap(QPixmap("src/checkCode.gif"))
+        #zxcvbnm,./self.checkCodeImageLabel.setPixmap(QPixmap("src/checkCode.gif"))
         self.stackedWidget.setCurrentIndex(0)
+
     
     @pyqtSlot()
     def loginFaled(self):
@@ -163,6 +191,8 @@ class loginDialog(QDialog, Ui_loginDialog):
     @pyqtSlot()
     def loginAgain(self):
         self.t1.quit()
+        self.loginTimes += 1
+        self.label.setText('Loading.第'+str(self.loginTimes)+'次')
         self.t1.start()
     
     @pyqtSlot()
@@ -177,14 +207,14 @@ class loginDialog(QDialog, Ui_loginDialog):
         """
         self.userName = self.userNameLineEdit.text()
         self.userCode = self.userCodeLineEdit.text()
-        self.checkCode = self.checkCodeLineEdit.text()
+        #self.checkCode = self.checkCodeLineEdit.text()
         
         if len(self.userName) != 12:
             QMessageBox.critical(self,'错误', '用户名长度不对')
         elif len(self.userCode) == 0:
             QMessageBox.critical(self,'错误', '密码不能为空')
-        elif len(self.checkCode) != 5:
-            QMessageBox.critical(self,'错误','验证码不正确')
+#        elif len(self.checkCode) != 5:
+#            QMessageBox.critical(self,'错误','验证码不正确')
         else:
             self.t1 = ProcessorThread(self.login, (), self.login.__name__)
             self.t1.start()
@@ -195,12 +225,10 @@ class loginDialog(QDialog, Ui_loginDialog):
             
     def login(self):
             self.mainPath = 'xs_main.aspx?xh='+self.userName
-            
-            bodypart1 = '__VIEWSTATE=dDwtMTg3MTM5OTI5MTs7PkfLdDpkwXkZwjVjoRLwfK%2BL%2FuEU&TextBox1='
+            bodypart1 = '__VIEWSTATE=dDwtMTM2MTgxNTk4OTs7PoKJpeOaMoX03GheocP91rB2QIeM&TextBox1='
             bodypart2 = '&TextBox2='
-            bodypart3 = '&TextBox3='
-            bodypart4 = '&RadioButtonList1=%D1%A7%C9%FA&Button1=&lbLanguage='
-            body = bodypart1+self.userName+bodypart2+self.userCode+bodypart3+self.checkCode+bodypart4
+            bodypart3 = '&ddl_js=%D1%A7%C9%FA&Button1=+%B5%C7+%C2%BC+'
+            body = bodypart1 +self.userName+bodypart2+self.userCode+bodypart3
             body = body.encode('ISO-8859-1')
             
             headers = {'Host':'jw2005.scuteo.com',
@@ -219,7 +247,8 @@ class loginDialog(QDialog, Ui_loginDialog):
             
             req = urllib.request.Request(url = self.mainUrl+self.loginPath,data = body,headers = headers)
             try:
-                data = urllib.request.urlopen(url = req, timeout = 1)
+                urllib.request.urlopen(url = req, timeout = 1)
+                data = urllib.request.urlopen(url = self.mainUrl+self.mainPath)
             except urllib.error.HTTPError as e:
                 self.loginError = e.getcode()
                 print(self.loginError)
@@ -238,22 +267,22 @@ class loginDialog(QDialog, Ui_loginDialog):
                     self.destroy()
     
     def initialLogin(self):
-        self.progressBar.setValue(50)
-        f = urllib.request.urlopen('http://jw2005.scuteo.com/')
-        p = (urllib.parse.urlparse(f.geturl()))[2]
+        self.progressBar.setValue(60)
+        conn = http.client.HTTPConnection('jw2005.scuteo.com')
+        conn.request('GET', '')
+        r1 = conn.getresponse()
+        p = r1.getheader('Location')
+        self.progressBar.setValue(80)
         self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
-        Cookie = f.info()['Set-Cookie']
+        Cookie = r1.getheader('Set-Cookie')
         self.userCookie = Cookie[:Cookie.find(';')]
-        self.loginParser = LoginParser()
-        localjpg = "src/checkCode.gif"
-        urllib.request.urlretrieve(self.mainUrl+self.checkCodePath,localjpg)
         self.progressBar.setValue(99)
         self.initialFinished_NoParameters.emit()
-
 
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
     a = loginDialog()
     a.show()
+    app.setStyle(QPlastiqueStyle())
     sys.exit(app.exec_())
