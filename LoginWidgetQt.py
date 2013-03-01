@@ -4,7 +4,7 @@
 Module implementing loginDialog.
 """
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer, QPlastiqueStyle
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
@@ -284,5 +284,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     a = loginDialog()
     a.show()
-    app.setStyle(QPlastiqueStyle())
     sys.exit(app.exec_())

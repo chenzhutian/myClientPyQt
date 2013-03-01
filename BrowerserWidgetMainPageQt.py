@@ -5,7 +5,7 @@ Module implementing MainWindow.
 """
 
 from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer
-from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor, QPlastiqueStyle
+from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
@@ -841,7 +841,6 @@ def main():
     l.show()
     a = MainWindow(loginW = l)
     l.loginFinished_NoParameters.connect(a.creatWidget,Qt.QueuedConnection) 
-    app.setStyle(QPlastiqueStyle());
     sys.exit(app.exec_())
     
 
