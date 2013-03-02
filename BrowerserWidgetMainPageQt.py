@@ -4,8 +4,8 @@
 Module implementing MainWindow.
 """
 
-from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer
-from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor
+from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer, QFile
+from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor, QStyleFactory, qApp
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
@@ -380,10 +380,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.yxkcTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
             
         self.t1 = ProcessorThread()
-        self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
         self.timer = QTimer()
+        self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
+        self.setWindowFlags(Qt.FramelessWindowHint)
         
     @pyqtSlot()
     def creatWidget(self):
@@ -832,15 +833,87 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.yxkcTableView.setModel(self.yxkcTable)
         self.yxkcTableView.resizeColumnsToContents ()
         self.yxkcTableView.resizeRowsToContents()
+    
+    @pyqtSlot()
+    def on_kbPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.loadKbdataFlag == 0:
+            self.t1.setThread(self.loadKbdata, (), self.loadKbdata.__name__, 3)
+            self.t1.start()
+            self.timer.start(8000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(3)
+    
+    @pyqtSlot()
+    def on_cjPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.loadCjdataFlag == 0:
+            self.t1.setThread(self.loadCjdata, (), self.loadCjdata.__name__, 2)
+            self.t1.start()
+            self.timer.start(11000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(2)
+    
+    @pyqtSlot()
+    def on_yxkcPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.loadYxkcdataFlag == 0:
+            self.t1.setThread(self.loadYxkcdata, (), self.loadYxkcdata.__name__, 4)
+            self.t1.start()
+            self.timer.start(8000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(4)
+   
+    def mousePressEvent(self, e):
+        self.clickPos = e.pos();
 
+
+    def mouseMoveEvent(self, e):
+        self.move(e.globalPos() - self.clickPos)
+    
+    @pyqtSlot()
+    def on_kbBackPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        self.stackedWidget.setCurrentIndex(0)
+    
+    @pyqtSlot()
+    def on_cjBackPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        self.stackedWidget.setCurrentIndex(0)
+    
+    @pyqtSlot()
+    def on_yxkcBackPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        self.stackedWidget.setCurrentIndex(0)
         
 def main():
     import sys
+    file = QFile('./qss/Coffee.qss')
+    file.open(QFile.ReadOnly)
+    styleSheet = file.readAll()
+    styleSheet = str(styleSheet, encoding='utf8')
     app = QApplication(sys.argv)
     l = LoginWidgetQt.loginDialog()
     l.show()
     a = MainWindow(loginW = l)
-    l.loginFinished_NoParameters.connect(a.creatWidget,Qt.QueuedConnection) 
+    l.loginFinished_NoParameters.connect(a.creatWidget,Qt.QueuedConnection)
+    app.setStyle(QStyleFactory.create('Plastique'))
+    qApp.setStyleSheet(styleSheet)
     sys.exit(app.exec_())
     
 

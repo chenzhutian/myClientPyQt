@@ -4,8 +4,8 @@
 Module implementing loginDialog.
 """
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer
-from PyQt4.QtGui import QDialog, QApplication, QMessageBox
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer, QFile
+from PyQt4.QtGui import QDialog, QApplication, QMessageBox, QStyleFactory, qApp#, QMouseEvent 
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
 import urllib.parse
@@ -157,15 +157,17 @@ class loginDialog(QDialog, Ui_loginDialog):
         """
         super().__init__(parent)
         self.setupUi(self)
-        self.stackedWidget.setCurrentIndex(1)
+        #self.stackedWidget.setCurrentIndex(1)
+        #self.progressBar.setValue(20)
         
-#        conn = http.client.HTTPConnection('jw2005.scuteo.com')
-#        conn.request('GET', '')
-#        r1 = conn.getresponse()
-#        p = r1.getheader('Location')
-#        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
-#        Cookie = r1.getheader('Set-Cookie')
-#        self.userCookie = Cookie[:Cookie.find(';')]
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        conn = http.client.HTTPConnection('jw2005.scuteo.com')
+        conn.request('GET', '')
+        r1 = conn.getresponse()
+        p = r1.getheader('Location')
+        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
+        Cookie = r1.getheader('Set-Cookie')
+        self.userCookie = Cookie[:Cookie.find(';')]
         
         self.loginParser = LoginParser()
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
@@ -173,8 +175,10 @@ class loginDialog(QDialog, Ui_loginDialog):
         self.loginSuccessfulSignal_NoParameters .connect(self.loginSuccessful, Qt.QueuedConnection)
         self.initialFinished_NoParameters.connect(self.initialFinished, Qt.QueuedConnection)
         self.t1 = ProcessorThread(self.initialLogin, (), self.initialLogin.__name__)
-        self.t1.start()
-
+        #self.progressBar.setValue(60)
+        #self.t1.start()
+        #self.progressBar.setValue(80)
+        #self.initialFinished()
     
     @pyqtSlot()
     def initialFinished(self):
@@ -267,21 +271,33 @@ class loginDialog(QDialog, Ui_loginDialog):
                     self.destroy()
     
     def initialLogin(self):
-        self.progressBar.setValue(60)
         conn = http.client.HTTPConnection('jw2005.scuteo.com')
         conn.request('GET', '')
         r1 = conn.getresponse()
         p = r1.getheader('Location')
-        self.progressBar.setValue(80)
         self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
         Cookie = r1.getheader('Set-Cookie')
         self.userCookie = Cookie[:Cookie.find(';')]
-        self.progressBar.setValue(99)
         self.initialFinished_NoParameters.emit()
+    
+    
+    def mousePressEvent(self, e):
+        self.clickPos = e.pos();
+
+
+    def mouseMoveEvent(self, e):
+        self.move(e.globalPos() - self.clickPos)
+
 
 if __name__ == '__main__':
     import sys
+    file = QFile('./qss/Coffee.qss')
+    file.open(QFile.ReadOnly)
+    styleSheet = file.readAll()
+    styleSheet = str(styleSheet, encoding='utf8')
     app = QApplication(sys.argv)
     a = loginDialog()
     a.show()
+    app.setStyle(QStyleFactory.create('Plastique'))
+    qApp.setStyleSheet(styleSheet)
     sys.exit(app.exec_())
