@@ -5,7 +5,7 @@ Module implementing loginDialog.
 """
 
 from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QTimer, QFile
-from PyQt4.QtGui import QDialog, QApplication, QMessageBox, QStyleFactory, qApp#, QMouseEvent 
+from PyQt4.QtGui import QDialog, QApplication, QMessageBox, QStyleFactory, qApp, QIcon, QStyle
 from Ui_LoginWidgetQt import Ui_loginDialog
 import urllib.request
 import urllib.parse
@@ -13,22 +13,6 @@ import urllib.error
 import MenuPath
 from html.parser import HTMLParser
 import http.client
-
-#class SmartRedirectHandler(urllib.request.HTTPRedirectHandler):
-#     
-#    
-#    def http_error_302(self, req, fp, code, msg, headers):
-#        pass
-#        p = headers["Location"]
-#        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
-#        print(self.mainUrl)
-#        self.cookies = headers['Set-Cookie']
-#        self.cookies = self.cookies[:self.cookies.find(';')]
-#        print(self.cookies)
-#        #result = urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)                                      
-#        print('a')
-#        return
-
 
 class ProcessorThread(QThread):
 
@@ -106,6 +90,8 @@ class LoginParser(HTMLParser):
                         self.path.xsxkqkcx = self.encodeUrl(attrs[0][1])
                     elif value == "GetMc('满意度调查');":
                         self.path.myddc = self.encodeUrl(attrs[0][1])
+                    elif value == "GetMc('校公选课选课');":
+                        self.path.xgxkxk = self.encodeUrl(attrs[0][1])
 
     def handle_data(self,data):
         if self.tagflag['script'] == True:
@@ -157,32 +143,37 @@ class loginDialog(QDialog, Ui_loginDialog):
         """
         super().__init__(parent)
         self.setupUi(self)
-        #self.stackedWidget.setCurrentIndex(1)
-        #self.progressBar.setValue(20)
+        self.stackedWidget.setCurrentIndex(1)
+        self.progressBar.setValue(20)
         
         self.setWindowFlags(Qt.FramelessWindowHint)
-        conn = http.client.HTTPConnection('jw2005.scuteo.com')
-        conn.request('GET', '')
-        r1 = conn.getresponse()
-        p = r1.getheader('Location')
-        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
-        Cookie = r1.getheader('Set-Cookie')
-        self.userCookie = Cookie[:Cookie.find(';')]
-        
+#        conn = http.client.HTTPConnection('jw2005.scuteo.com')
+#        conn.request('GET', '')
+#        r1 = conn.getresponse()
+#        p = r1.getheader('Location')
+#        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
+#        Cookie = r1.getheader('Set-Cookie')
+#        self.userCookie = Cookie[:Cookie.find(';')]
+        self.loadingQuitButton.setIcon(QIcon(self.style().standardPixmap(QStyle.SP_TitleBarCloseButton)))
         self.loginParser = LoginParser()
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
         self.loginFaledSignal_NoParameters.connect(self.loginFaled, Qt.QueuedConnection)
         self.loginSuccessfulSignal_NoParameters .connect(self.loginSuccessful, Qt.QueuedConnection)
         self.initialFinished_NoParameters.connect(self.initialFinished, Qt.QueuedConnection)
         self.t1 = ProcessorThread(self.initialLogin, (), self.initialLogin.__name__)
-        #self.progressBar.setValue(60)
-        #self.t1.start()
-        #self.progressBar.setValue(80)
-        #self.initialFinished()
+        self.progressBar.setValue(60)
+        self.t1.start()
+        self.timer.start(2000)
+        self.progressBar.setValue(80)
     
     @pyqtSlot()
     def initialFinished(self):
         #zxcvbnm,./self.checkCodeImageLabel.setPixmap(QPixmap("src/checkCode.gif"))
+        self.userName = '201130630338'
+        self.userCode = '230059'
+        self.timer.stop()
+        self.loginTimes = 1
+        self.label.setText('Loading.第'+str(self.loginTimes)+'次')
         self.stackedWidget.setCurrentIndex(0)
 
     
@@ -209,8 +200,8 @@ class loginDialog(QDialog, Ui_loginDialog):
         """
         Slot documentation goes here.
         """
-        self.userName = self.userNameLineEdit.text()
-        self.userCode = self.userCodeLineEdit.text()
+        #self.userName = self.userNameLineEdit.text()
+        #self.userCode = self.userCodeLineEdit.text()
         #self.checkCode = self.checkCodeLineEdit.text()
         
         if len(self.userName) != 12:
@@ -226,7 +217,17 @@ class loginDialog(QDialog, Ui_loginDialog):
             self.progressBar.setValue(89)
             self.stackedWidget.setCurrentIndex(1)
 
-            
+
+    def initialLogin(self):
+        conn = http.client.HTTPConnection('jw2005.scuteo.com')
+        conn.request('GET', '')
+        r1 = conn.getresponse()
+        p = r1.getheader('Location')
+        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
+        Cookie = r1.getheader('Set-Cookie')
+        self.userCookie = Cookie[:Cookie.find(';')]
+        self.initialFinished_NoParameters.emit()
+        
     def login(self):
             self.mainPath = 'xs_main.aspx?xh='+self.userName
             bodypart1 = '__VIEWSTATE=dDwtMTM2MTgxNTk4OTs7PoKJpeOaMoX03GheocP91rB2QIeM&TextBox1='
@@ -270,15 +271,7 @@ class loginDialog(QDialog, Ui_loginDialog):
                     self.close()
                     self.destroy()
     
-    def initialLogin(self):
-        conn = http.client.HTTPConnection('jw2005.scuteo.com')
-        conn.request('GET', '')
-        r1 = conn.getresponse()
-        p = r1.getheader('Location')
-        self.mainUrl = 'http://jw2005.scuteo.com/'+ p[1:p.rfind('/')+1]
-        Cookie = r1.getheader('Set-Cookie')
-        self.userCookie = Cookie[:Cookie.find(';')]
-        self.initialFinished_NoParameters.emit()
+
     
     
     def mousePressEvent(self, e):

@@ -38,7 +38,7 @@
   <property name="modal">
    <bool>false</bool>
   </property>
-  <widget class="QStackedWidget" name="stackedWidget">
+  <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -53,330 +53,358 @@
      <height>180</height>
     </size>
    </property>
-   <property name="maximumSize">
-    <size>
-     <width>330</width>
-     <height>180</height>
-    </size>
-   </property>
-   <property name="cursor">
-    <cursorShape>ArrowCursor</cursorShape>
-   </property>
-   <property name="contextMenuPolicy">
-    <enum>Qt::NoContextMenu</enum>
-   </property>
    <property name="frameShape">
     <enum>QFrame::Box</enum>
    </property>
    <property name="frameShadow">
-    <enum>QFrame::Sunken</enum>
+    <enum>QFrame::Raised</enum>
    </property>
-   <widget class="QWidget" name="page">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
+   <property name="lineWidth">
+    <number>2</number>
+   </property>
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>1</x>
+      <y>1</y>
+      <width>328</width>
+      <height>178</height>
+     </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>325</width>
-      <height>175</height>
+      <width>328</width>
+      <height>178</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
-      <width>325</width>
-      <height>175</height>
+      <width>328</width>
+      <height>178</height>
      </size>
     </property>
-    <property name="layoutDirection">
-     <enum>Qt::LeftToRight</enum>
+    <property name="cursor">
+     <cursorShape>ArrowCursor</cursorShape>
     </property>
-    <widget class="QLabel" name="LoginTitleabel">
-     <property name="geometry">
-      <rect>
-       <x>1</x>
-       <y>11</y>
-       <width>332</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>332</width>
-       <height>41</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>332</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>22</pointsize>
-       <italic>false</italic>
-      </font>
-     </property>
-     <property name="text">
-      <string>绝望2005第三方登陆器</string>
-     </property>
-     <property name="scaledContents">
-      <bool>false</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="userNamelabel">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>60</y>
-       <width>48</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>48</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>12</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>用户名</string>
-     </property>
-     <property name="buddy">
-      <cstring>userNameLineEdit</cstring>
-     </property>
-    </widget>
-    <widget class="QLabel" name="userCodelabel">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>100</y>
-       <width>32</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>32</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>12</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>密码</string>
-     </property>
-     <property name="buddy">
-      <cstring>userCodeLineEdit</cstring>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="userNameLineEdit">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>60</y>
-       <width>140</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>140</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>140</width>
-       <height>22</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="quitButton">
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>139</y>
-       <width>75</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>75</width>
-       <height>27</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>75</width>
-       <height>27</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>11</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>退出</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="loginButton">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>139</y>
-       <width>75</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>75</width>
-       <height>27</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>75</width>
-       <height>27</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>11</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="inputMethodHints">
-      <set>Qt::ImhNone</set>
-     </property>
-     <property name="text">
-      <string>登陆</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="userCodeLineEdit">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>100</y>
-       <width>140</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>140</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>140</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="echoMode">
-      <enum>QLineEdit::Password</enum>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="page_2">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
+    <property name="contextMenuPolicy">
+     <enum>Qt::NoContextMenu</enum>
     </property>
-    <widget class="QProgressBar" name="progressBar">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>140</y>
-       <width>281</width>
-       <height>20</height>
-      </rect>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <widget class="QWidget" name="page">
+     <property name="enabled">
+      <bool>true</bool>
      </property>
-     <property name="value">
-      <number>24</number>
-     </property>
-     <property name="textVisible">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>301</width>
-       <height>52</height>
-      </rect>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="minimumSize">
       <size>
-       <width>301</width>
-       <height>51</height>
+       <width>330</width>
+       <height>180</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>Comic Sans MS</family>
-       <pointsize>28</pointsize>
-       <weight>50</weight>
-       <italic>true</italic>
-       <bold>false</bold>
-      </font>
+     <property name="maximumSize">
+      <size>
+       <width>330</width>
+       <height>180</height>
+      </size>
      </property>
-     <property name="text">
-      <string>Loading...</string>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
+     <widget class="QLabel" name="LoginTitleabel">
+      <property name="geometry">
+       <rect>
+        <x>1</x>
+        <y>11</y>
+        <width>332</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>332</width>
+        <height>41</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>332</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>22</pointsize>
+        <italic>false</italic>
+       </font>
+      </property>
+      <property name="text">
+       <string>绝望2005第三方登陆器</string>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="userNamelabel">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>60</y>
+        <width>48</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>48</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>用户名</string>
+      </property>
+      <property name="buddy">
+       <cstring>userNameLineEdit</cstring>
+      </property>
+     </widget>
+     <widget class="QLabel" name="userCodelabel">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>100</y>
+        <width>32</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>32</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>密码</string>
+      </property>
+      <property name="buddy">
+       <cstring>userCodeLineEdit</cstring>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="userNameLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>60</y>
+        <width>140</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>140</width>
+        <height>22</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="quitButton">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>139</y>
+        <width>75</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>75</width>
+        <height>27</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>75</width>
+        <height>27</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>11</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>退出</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="loginButton">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>139</y>
+        <width>75</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>75</width>
+        <height>27</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>75</width>
+        <height>27</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>微软雅黑</family>
+        <pointsize>11</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="inputMethodHints">
+       <set>Qt::ImhNone</set>
+      </property>
+      <property name="text">
+       <string>登陆</string>
+      </property>
+      <property name="default">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="userCodeLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>100</y>
+        <width>140</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>140</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
+      </property>
+     </widget>
     </widget>
-    <widget class="QPushButton" name="loadingQuitButton">
-     <property name="geometry">
-      <rect>
-       <x>290</x>
-       <y>0</y>
-       <width>31</width>
-       <height>23</height>
-      </rect>
+    <widget class="QWidget" name="page_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="text">
-      <string>X</string>
-     </property>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>140</y>
+        <width>281</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>24</number>
+      </property>
+      <property name="textVisible">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>301</width>
+        <height>52</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>301</width>
+        <height>51</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Comic Sans MS</family>
+        <pointsize>28</pointsize>
+        <weight>50</weight>
+        <italic>true</italic>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Loading...</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="loadingQuitButton">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>0</y>
+        <width>31</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>X</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -386,6 +414,7 @@
   <tabstop>userCodeLineEdit</tabstop>
   <tabstop>loginButton</tabstop>
   <tabstop>quitButton</tabstop>
+  <tabstop>loadingQuitButton</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -396,28 +425,12 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>228</x>
-     <y>153</y>
+     <x>215</x>
+     <y>152</y>
     </hint>
     <hint type="destinationlabel">
-     <x>245</x>
-     <y>179</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>loadingQuitButton</sender>
-   <signal>clicked()</signal>
-   <receiver>loginDialog</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>304</x>
-     <y>25</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>414</x>
-     <y>90</y>
+     <x>210</x>
+     <y>-32</y>
     </hint>
    </hints>
   </connection>

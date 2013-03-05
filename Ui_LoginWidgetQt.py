@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\LoginWidgetQt.ui'
 #
-# Created: Sat Mar  2 02:17:57 2013
+# Created: Sun Mar  3 17:22:48 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,10 +35,17 @@ class Ui_loginDialog(object):
         loginDialog.setAutoFillBackground(False)
         loginDialog.setSizeGripEnabled(False)
         loginDialog.setModal(False)
-        self.stackedWidget = QtGui.QStackedWidget(loginDialog)
-        self.stackedWidget.setGeometry(QtCore.QRect(0, 0, 330, 180))
-        self.stackedWidget.setMinimumSize(QtCore.QSize(330, 180))
-        self.stackedWidget.setMaximumSize(QtCore.QSize(330, 180))
+        self.frame = QtGui.QFrame(loginDialog)
+        self.frame.setGeometry(QtCore.QRect(0, 0, 330, 180))
+        self.frame.setMinimumSize(QtCore.QSize(330, 180))
+        self.frame.setFrameShape(QtGui.QFrame.Box)
+        self.frame.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame.setLineWidth(2)
+        self.frame.setObjectName(_fromUtf8("frame"))
+        self.stackedWidget = QtGui.QStackedWidget(self.frame)
+        self.stackedWidget.setGeometry(QtCore.QRect(1, 1, 328, 178))
+        self.stackedWidget.setMinimumSize(QtCore.QSize(328, 178))
+        self.stackedWidget.setMaximumSize(QtCore.QSize(328, 178))
         self.stackedWidget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.stackedWidget.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.stackedWidget.setFrameShape(QtGui.QFrame.Box)
@@ -51,8 +58,8 @@ class Ui_loginDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.page.sizePolicy().hasHeightForWidth())
         self.page.setSizePolicy(sizePolicy)
-        self.page.setMinimumSize(QtCore.QSize(325, 175))
-        self.page.setMaximumSize(QtCore.QSize(325, 175))
+        self.page.setMinimumSize(QtCore.QSize(330, 180))
+        self.page.setMaximumSize(QtCore.QSize(330, 180))
         self.page.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.page.setObjectName(_fromUtf8("page"))
         self.LoginTitleabel = QtGui.QLabel(self.page)
@@ -114,6 +121,7 @@ class Ui_loginDialog(object):
         font.setWeight(75)
         self.loginButton.setFont(font)
         self.loginButton.setInputMethodHints(QtCore.Qt.ImhNone)
+        self.loginButton.setDefault(True)
         self.loginButton.setObjectName(_fromUtf8("loginButton"))
         self.userCodeLineEdit = QtGui.QLineEdit(self.page)
         self.userCodeLineEdit.setGeometry(QtCore.QRect(130, 100, 140, 22))
@@ -146,8 +154,8 @@ class Ui_loginDialog(object):
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName(_fromUtf8("label"))
-        self.loadingQuitButton = QtGui.QPushButton(self.page_2)
-        self.loadingQuitButton.setGeometry(QtCore.QRect(290, 0, 31, 23))
+        self.loadingQuitButton = QtGui.QToolButton(self.page_2)
+        self.loadingQuitButton.setGeometry(QtCore.QRect(290, 0, 31, 21))
         self.loadingQuitButton.setObjectName(_fromUtf8("loadingQuitButton"))
         self.stackedWidget.addWidget(self.page_2)
         self.userNamelabel.setBuddy(self.userNameLineEdit)
@@ -155,11 +163,11 @@ class Ui_loginDialog(object):
 
         self.retranslateUi(loginDialog)
         QtCore.QObject.connect(self.quitButton, QtCore.SIGNAL(_fromUtf8("clicked()")), loginDialog.close)
-        QtCore.QObject.connect(self.loadingQuitButton, QtCore.SIGNAL(_fromUtf8("clicked()")), loginDialog.close)
         QtCore.QMetaObject.connectSlotsByName(loginDialog)
         loginDialog.setTabOrder(self.userNameLineEdit, self.userCodeLineEdit)
         loginDialog.setTabOrder(self.userCodeLineEdit, self.loginButton)
         loginDialog.setTabOrder(self.loginButton, self.quitButton)
+        loginDialog.setTabOrder(self.quitButton, self.loadingQuitButton)
 
     def retranslateUi(self, loginDialog):
         loginDialog.setWindowTitle(_translate("loginDialog", "登陆", None))

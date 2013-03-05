@@ -31,6 +31,26 @@ QPushButton:pressed {
     padding-top: 5px;
     background-color: #d0d67c;
 }
+QToolButton{
+    background-color: palegoldenrod;
+    border-width: 2px;
+    border-color: darkkhaki;
+    border-style: solid;
+    border-radius: 5;
+    padding: 3px;
+}
+QToolButton:hover {
+   background-color: khaki;
+}
+
+/* Increase the padding, so the text is shifted when the button is
+   pressed. */
+QToolButton:pressed {
+    padding-left: 5px;
+    padding-top: 5px;
+    background-color: #d0d67c;
+}
+
 
 QLabel, QAbstractButton {
     font: bold;
@@ -90,7 +110,12 @@ QLabel {
     padding: 0;
     background: none;
 }
-
+QStackedWidget {
+    border: none;
+    padding: 0;
+    background: none;
+    border-radius: 5px;
+}
 /* A QToolTip is a QLabel ... */
 QToolTip {
     border: 2px solid darkkhaki;

@@ -4,8 +4,8 @@
 Module implementing MainWindow.
 """
 
-from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer, QFile
-from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem, QHeaderView, QFont, QBrush, QColor, QStyleFactory, qApp
+from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer, QFile, QModelIndex
+from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem , QHeaderView, QFont, QBrush, QColor, QStyleFactory, QIcon,QStyle, QPushButton, QMessageBox, qApp
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
@@ -312,7 +312,104 @@ class YxkcParser(HTMLParser):
     def handle_comment(self,data):
         if data == ' 查询得到的数据量显示区域 ':
             self.getData = True
+
+class XtxParser(HTMLParser):
+    getData = False
+    txFlag = False
+    tdIter = 0
+    trIter = 0
+    userViewState = ''
+    pageSize = 16
+    xtxError = ''
+    tagflag = {'table':False, 
+                   'td':False,
+                   'tr':False,
+                   'input':False, 
+                   'span':False, 
+                   'script':False}
+    xtxData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
+    Xtx = []
+    txData = ['', '', '', '', '', '', '', '', '', '', '', '', '']
+    Tx = []
+
+    def handle_starttag(self,tag,attrs):
+        if self.getData:
+            if tag == 'table':
+                for name,value in attrs:
+                    if name == 'id':
+                        if value == 'kcmcGrid':
+                            self.tagflag['table'] = True
+                            self.trIter = 0
+                            break
+                        elif value == 'DataGrid2':
+                            self.tagflag['table'] = True
+                            self.trIter = 0
+                            self.txFlag = True
+                            break
+            elif tag == 'tr':
+                if self.tagflag['table']:
+                    self.tagflag['tr'] = True
+                    self.tdIter = 0
+                    self.trIter += 1
+            elif tag == 'td':
+                if self.tagflag['tr']:
+                    self.tagflag['td'] = True
+                    self.tdIter += 1
+            elif tag == 'input':
+                if self.tagflag['td']:
+                    for name, value in attrs:
+                        if name == 'type' and value == 'checkbox':
+                            self.xtxData[self.tdIter-1] = attrs[2][1]
+                            break
+        elif tag == 'span':
+            for name, value in attrs:
+                if name == 'id' and value == 'dpkcmcGrid_lblTotalRecords':
+                    self.tagflag['span'] = True
+        elif tag == 'script':
+            for name, value in attrs:
+                if name == 'language' and value == 'javascript':
+                    self.tagflag['script'] = True
+        if tag == 'input':
+            for name,value in attrs:
+                if name == 'name' and value == '__VIEWSTATE':
+                    self.userViewState = attrs[2][1]
+                    self.userViewState = urllib.parse.quote(self.userViewState, safe = '')
+                    break
+
+    def handle_endtag(self,tag):
+        if tag == 'table':
+            self.tagflag['table'] = False
+            self.txFlag = False
+        elif tag == 'tr':
+            self.tagflag['tr'] = False
+            if self.tagflag['table'] and self.trIter>1:
+                if self.txFlag:
+                    self.Tx.append(self.txData)
+                    self.txData = ['', '', '', '', '', '', '', '', '', '', '', '', '']
+                else:
+                    self.Xtx.append(self.xtxData)
+                    self.xtxData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
+        elif tag == 'td':
+            self.tagflag['td'] = False
+        elif tag == 'span':
+            self.tagflag['span'] = False
             
+    def handle_data(self,data):
+        if self.tagflag['td'] and self.trIter >1:
+            if self.txFlag:
+                self.txData[self.tdIter-1]=data
+            else:
+                if self.tdIter == 1:
+                    pass
+                else:
+                    self.xtxData[self.tdIter-1] = data
+        elif self.tagflag['span']:
+            self.pageSize = data
+        elif self.tagflag['script']:
+            if data[:5] == 'alert':
+                self.xtxError = data[7:]
+                self.xtxError = self.xtxError[:self.xtxError.find("'")]           
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     """
     Class documentation goes here.
@@ -325,15 +422,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     mainPath = ''
     menuPath = MenuPath.MenuPath()
     bgRGB = MenuPath.RGBdata()
+    oldIndex = QModelIndex()
     
     Cj = []
     Kb = []
     Sjk = []
     Wap = []
     Yxkc = []
+    Xtx = []
+    Tx = []
     loadCjdataFlag = 0
     loadKbdataFlag = 0
     loadYxkcdataFlag = 0
+    loadXtxdataFlag = 0
+    maxNormal = False
     iid = 0
     progressUpdated=pyqtSignal(int)
     
@@ -350,6 +452,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cjTable = QStandardItemModel()
         s = ['学年','学期','课程代码','课程名称','课程性质','课程归属','学分','绩点','成绩','辅修标记','补考成绩','重修成绩','开课学院','备注','重修标记','排名']
         self.cjTable.setHorizontalHeaderLabels(s)
+        
         for i in range(0, 16):
             self.cjTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter) 
             
@@ -378,12 +481,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.yxkcTable.setHorizontalHeaderLabels(s)
         for i in range(0, 8):
             self.yxkcTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+        
+        self.xtxTable = QStandardItemModel()
+        s = ['选课', '课程名称', '课程代码', '教师姓名', '上课时间', '上课地点', '学分', '周学时', '起始结束周', '容量', '余量', '课程归属', '课程性质', '校区', '开课学院', '考试时间']
+        self.xtxTable.setHorizontalHeaderLabels(s)
+        for i in range(0, 16):
+            self.xtxTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+        
+        self.txTable = QStandardItemModel()
+        s = ['课程名称', '教师姓名', '学分', '周学时', '起始结束周', '校区', '上课时间', '上课地点', '教材', '课程归属', '课程性质', '校区代码', '退选']
+        self.txTable.setHorizontalHeaderLabels(s)
+        for i in range(0, 13):
+            self.txTable.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
             
+        self.closeToolButton.setIcon(QIcon(self.style().standardPixmap(QStyle.SP_TitleBarCloseButton)))
+        self.minToolButton.setIcon(QIcon(self.style().standardPixmap(QStyle.SP_TitleBarMinButton)))
+        self.maxPix = QIcon(self.style().standardPixmap(QStyle.SP_TitleBarMaxButton))
+        self.maxToolButton.setIcon(self.maxPix)
+        self.restorePix = QIcon(self.style().standardPixmap(QStyle.SP_TitleBarNormalButton))
+        
+        
+        
         self.t1 = ProcessorThread()
         self.timer = QTimer()
         self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
+        self.xtxTableView.verticalHeader().sectionClicked.connect(self.enableButton, Qt.QueuedConnection)
         self.setWindowFlags(Qt.FramelessWindowHint)
         
     @pyqtSlot()
@@ -403,8 +527,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.userWelcomeLabel.setText("登陆失败！")
             self.show()
             
+        
+    @pyqtSlot(int)
+    def showPage(self, index):
+        if index == 3:
+            self.showKbdata()
+        elif index == 4:
+            self.showYxkcdata()
+        elif index == 5:
+            self.showXtxdata()
+        self.timer.stop()
+        self.stackedWidget.setCurrentIndex(index)
+    
+    @pyqtSlot(int)
+    def showProgressing(self, value):
+        self.progressBar.setValue(value) 
+        
+    @pyqtSlot(int)
+    def updateProgress(self, value):
+        self.lblProgress=str(value)
+
     @pyqtSlot()
-    def on_cjAction_triggered(self):
+    def on_syToolButton_clicked(self):
+        self.stackedWidget.setCurrentIndex(0)
+
+    @pyqtSlot()
+    def on_cjToolButton_clicked(self):
         """
         Slot documentation goes here.
         """
@@ -415,61 +563,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stackedWidget.setCurrentIndex(1)
         else:
             self.stackedWidget.setCurrentIndex(2)
-        
-    @pyqtSlot(int)
-    def showPage(self, index):
-        if index == 3:
-            self.showKbdata()
-        elif index == 4:
-            self.showYxkcdata()
-        self.timer.stop()
-        self.stackedWidget.setCurrentIndex(index)
-    
-    @pyqtSlot(int)
-    def showProgressing(self, value):
-        self.progressBar.setValue(value) 
-        
-    @pyqtSlot()
-    def on_kbAction_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        if self.loadKbdataFlag == 0:
-            self.t1.setThread(self.loadKbdata, (), self.loadKbdata.__name__, 3)
-            self.t1.start()
-            self.timer.start(8000)
-            self.stackedWidget.setCurrentIndex(1)
-        else:
-            self.stackedWidget.setCurrentIndex(3)
-    
-    @pyqtSlot()
-    def on_xsxkAction_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        if self.loadYxkcdataFlag == 0:
-            self.t1.setThread(self.loadYxkcdata, (), self.loadYxkcdata.__name__, 4)
-            self.t1.start()
-            self.timer.start(8000)
-            self.stackedWidget.setCurrentIndex(1)
-        else:
-            self.stackedWidget.setCurrentIndex(4)
-        
-    @pyqtSlot()
-    def on_zyAction_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        self.stackedWidget.setCurrentIndex(0)
-    
-    @pyqtSlot()
-    def on_logoutAction_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        self.logout()
-        self.close()
-    
+            
     @pyqtSlot(str)
     def on_xnOpptionComboBox_currentIndexChanged(self, p0):
         """
@@ -491,9 +585,121 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         self.showCjdata2()
     
+    @pyqtSlot()
+    def on_kbToolButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.loadKbdataFlag == 0:
+            self.t1.setThread(self.loadKbdata, (), self.loadKbdata.__name__, 3)
+            self.t1.start()
+            self.timer.start(8000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(3)
+    
+    @pyqtSlot()
+    def on_yxkcToolButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.loadYxkcdataFlag == 0:
+            self.t1.setThread(self.loadYxkcdata, (), self.loadYxkcdata.__name__, 4)
+            self.t1.start()
+            self.timer.start(8000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(4)
+
+
+        
+
+    @pyqtSlot()
+    def on_xtxToolButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.loadXtxdataFlag == 0:
+            self.t1.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__,5 )
+            self.t1.start()
+            self.timer.start(4000)
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(5)
+
     @pyqtSlot(int)
-    def updateProgress(self, value):
-        self.lblProgress=str(value)
+    def enableButton(self, row):
+        index = self.xtxTable.index(row, 0)
+        button = self.xtxTableView.indexWidget(self.oldIndex)
+        if not button == None:
+            button.setEnabled(False)
+        button = self.xtxTableView.indexWidget(index)
+        self.oldIndex = QModelIndex(index)
+        button.setEnabled(True)
+
+    @pyqtSlot()
+    def pickThisLesson(self):
+        item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
+        pickLesson = str (item.text())
+        pickLesson = pickLesson.encode('gb2312')
+        pickLesson = urllib.parse.quote(pickLesson, safe = '')
+        plBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+self.xkViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs=2&ddl_sksj=&TextBox1=&'+pickLesson+'=on&dpkcmcGrid%3AtxtChoosePage=1&dpkcmcGrid%3AtxtPageSize='+str(self.pageSize)+'&Button1=++%CC%E1%BD%BB++'
+        plBody = plBody.encode('ISO-8859-1')
+        plHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Content-Length':len(plBody),
+                           'Cache-Control':'max-age=0',
+                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                           'Origin':'http://jw2005.scuteo.com',
+                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                           'Content-Type':'application/x-www-form-urlencoded',
+                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
+                           'Accept-Encoding':'gzip,deflate,sdch',
+                           'Accept-Language':'zh-CN,zh;q=0.8',
+                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                           'Cookie':self.userCookie}
+        plReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = plBody, headers = plHeaders)
+        try :
+            plData = urllib.request.urlopen(url = plReq)
+        except urllib.error.HTTPError as e:
+            self.loginError = e.getcode()
+            print(self.loginError)
+        else:
+            xtxParser = XtxParser()
+            xtxParser.feed(plData.read().decode('gb2312'))
+            print('a')
+            if xtxParser.xtxError != '' :
+                QMessageBox.critical(self,'错误', xtxParser.xtxError)
+            else:
+                QMessageBox.critical(self,'成功', 'yes')
+                self.xkViewState = xtxParser.userViewState
+            
+    @pyqtSlot()
+    def on_startSkPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        pass
+        
+    @pyqtSlot()
+    def on_minToolButton_clicked(self):
+        self.showMinimized()
+    
+    @pyqtSlot()
+    def on_maxToolButton_clicked(self):
+        if self.maxNormal :
+            self.showNormal()
+            self.maxNormal = not self.maxNormal
+            self.maxToolButton.setIcon(self.maxPix)
+        else:
+            self.showMaximized()
+            self.maxNormal = not self.maxNormal
+            self.maxToolButton.setIcon(self.restorePix)
+    
+    @pyqtSlot()
+    def on_closeToolButton_clicked(self):
+        self.logout()
+        self.close()
     
     def loginAgain(self):
         self.t1.quit()
@@ -505,7 +711,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Connection':'keep-alive',
                            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                            'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
-                           'Referer':self.mainUrl+self.menuPath.cjcx,
+                           'Referer':self.mainUrl+self.mainPath,
                            'Accept-Encoding':'gzip,deflate,sdch',
                            'Accept-Language':'zh-CN,zh;q=0.8',
                            'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
@@ -601,7 +807,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         finally:
             self.cjTabelView.setModel(self.cjTable)
             self.cjTabelView.resizeColumnsToContents ()
-            #self.kbTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
         
@@ -644,7 +850,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         finally:
             self.cjTabelView.setModel(self.cjTable)
             self.cjTabelView.resizeColumnsToContents ()
-            #self.kbTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
             self.iid = i
     
@@ -666,21 +872,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             return float(s)
             
-    def logout(self):
-        logoutHeaders = {'Host':'jw2005.scuteo.com', 
-                                    'Connection':'keep-alive', 
-                                    'Cache-Control':'max-age=0', 
-                                    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
-                                    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
-                                    'Referer':self.mainUrl+self.mainPath, 
-                                    'Accept-Encoding':'gzip,deflate,sdch', 
-                                    'Accept-Language':'zh-CN,zh;q=0.8', 
-                                    'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
-                                    'Cookie':self.userCookie}
-        logoutUrl = self.mainUrl+'logout.aspx'
-        logoutReq = urllib.request.Request(url =logoutUrl,headers = logoutHeaders)
-        urllib.request.urlopen(url = logoutReq)
-    
     def loadKbdata(self):
         self.progressUpdated.emit(20)
         kbHeaders = {'Host':'jw2005.scuteo.com', 
@@ -832,74 +1023,157 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i +=1
         self.yxkcTableView.setModel(self.yxkcTable)
         self.yxkcTableView.resizeColumnsToContents ()
+        #self.yxkcTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         self.yxkcTableView.resizeRowsToContents()
-    
-    @pyqtSlot()
-    def on_kbPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        if self.loadKbdataFlag == 0:
-            self.t1.setThread(self.loadKbdata, (), self.loadKbdata.__name__, 3)
-            self.t1.start()
-            self.timer.start(8000)
-            self.stackedWidget.setCurrentIndex(1)
+        
+    def loadXtxdata(self):
+        xtxHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                           'Referer':self.mainUrl+self.mainPath,
+                           'Accept-Encoding':'gzip,deflate,sdch',
+                           'Accept-Language':'zh-CN,zh;q=0.8',
+                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                           'Cookie':self.userCookie}
+                           
+        xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
+        try :
+            xtxData = urllib.request.urlopen(url = xtxReq)
+        except urllib.error.HTTPError as e:
+            self.loginError = e.getcode()
+            print(self.loginError)
         else:
-            self.stackedWidget.setCurrentIndex(3)
+            xtxParser = XtxParser()
+            xtxParser.feed(xtxData.read().decode('gb2312'))
+            xtxParser.getData = True
+            userViewState = xtxParser.userViewState
+            self.pageSize = xtxParser.pageSize
+         
+            xtxBody = '__EVENTTARGET=dpkcmcGrid%3AtxtPageSize&__EVENTARGUMENT=&__VIEWSTATE='+userViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs=2&ddl_sksj=&TextBox1=&dpkcmcGrid%3AtxtChoosePage=1&dpkcmcGrid%3AtxtPageSize='+str(self.pageSize)
+            xtxBody = xtxBody.encode('ISO-8859-1')
+            xtxHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Content-Length':len(xtxBody),
+                           'Cache-Control':'max-age=0',
+                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                           'Origin':'http://jw2005.scuteo.com',
+                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                           'Content-Type':'application/x-www-form-urlencoded',
+                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
+                           'Accept-Encoding':'gzip,deflate,sdch',
+                           'Accept-Language':'zh-CN,zh;q=0.8',
+                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                           'Cookie':self.userCookie}
+            xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = xtxBody,headers = xtxHeaders)
+            try :
+                xtxData = urllib.request.urlopen(url = xtxReq)
+            except urllib.error.HTTPError as e:
+                self.loginError = e.getcode()
+                print(self.loginError)
+            else:
+                xtxParser.feed(xtxData.read().decode('gb2312'))
+                self.xkViewState = xtxParser.userViewState
+                for xtxdata in xtxParser.Xtx:
+                    self.Xtx.append(xtxdata)
+                for txdata in xtxParser.Tx:
+                    self.Tx.append(txdata)
+                self.loadXtxdataFlag = 1
     
-    @pyqtSlot()
-    def on_cjPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        if self.loadCjdataFlag == 0:
-            self.t1.setThread(self.loadCjdata, (), self.loadCjdata.__name__, 2)
-            self.t1.start()
-            self.timer.start(11000)
-            self.stackedWidget.setCurrentIndex(1)
-        else:
-            self.stackedWidget.setCurrentIndex(2)
-    
-    @pyqtSlot()
-    def on_yxkcPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        if self.loadYxkcdataFlag == 0:
-            self.t1.setThread(self.loadYxkcdata, (), self.loadYxkcdata.__name__, 4)
-            self.t1.start()
-            self.timer.start(8000)
-            self.stackedWidget.setCurrentIndex(1)
-        else:
-            self.stackedWidget.setCurrentIndex(4)
-   
+    def showXtxdata(self):
+        i = 0
+        for xtxdata in self.Xtx:
+            j = 0
+            for data in xtxdata:
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
+                item = QStandardItem(data)
+                item.setFont(font)
+                if  i%2 ==1:
+                    brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
+                    brush.setStyle(Qt.SolidPattern)
+                    item.setBackground(brush)
+#                brush = QBrush(QColor(255, 255, 255))
+#                brush.setStyle(Qt.SolidPattern)
+#                item.setForeground(brush)
+                item.setTextAlignment(Qt.AlignCenter)
+                self.xtxTable.setItem(i,j,item)
+                j +=1
+            i +=1
+        self.xtxTableView.setModel(self.xtxTable)
+        for j in range(0, i):
+            pickButton = QPushButton('选这门课')
+            pickButton.setAutoFillBackground(False)
+            pickButton.setFixedSize(60, 30)
+            pickButton.setEnabled(False)
+            index = self.xtxTable.index(j, 0)
+            self.xtxTableView.setIndexWidget(index, pickButton)
+            pickButton.clicked.connect(self.pickThisLesson, Qt.QueuedConnection)
+        self.xtxTableView.resizeColumnsToContents ()
+        #self.xtxTableView.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        self.xtxTableView.resizeRowsToContents()
+        i = 0
+        for txdata in self.Tx:
+            j = 0
+            for data in txdata:
+                font = QFont()
+                font.setFamily("微软雅黑")
+                font.setPointSize(12)
+                item = QStandardItem(data)
+                item.setFont(font)
+                if  i%2 ==1:
+                    brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
+                    brush.setStyle(Qt.SolidPattern)
+                    item.setBackground(brush)
+#                brush = QBrush(QColor(255, 255, 255))
+#                brush.setStyle(Qt.SolidPattern)
+#                item.setForeground(brush)
+                item.setTextAlignment(Qt.AlignCenter)
+                self.txTable.setItem(i,j,item)
+                j +=1
+            i +=1
+        self.txTableView.setModel(self.txTable)
+        self.txTableView.resizeColumnsToContents ()
+        #self.xtxTableView.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        self.txTableView.resizeRowsToContents()
+        
+    def logout(self):
+        logoutHeaders = {'Host':'jw2005.scuteo.com', 
+                                    'Connection':'keep-alive', 
+                                    'Cache-Control':'max-age=0', 
+                                    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+                                    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', 
+                                    'Referer':self.mainUrl+self.mainPath, 
+                                    'Accept-Encoding':'gzip,deflate,sdch', 
+                                    'Accept-Language':'zh-CN,zh;q=0.8', 
+                                    'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3', 
+                                    'Cookie':self.userCookie}
+        logoutUrl = self.mainUrl+'logout.aspx'
+        logoutReq = urllib.request.Request(url =logoutUrl,headers = logoutHeaders)
+        urllib.request.urlopen(url = logoutReq)
+        
+        
     def mousePressEvent(self, e):
         self.clickPos = e.pos();
-
+    
+    def mouseDoubleClickEvent(self, e):
+        if (e.button() == Qt.LeftButton and e.y() <= self.height()):
+            if not self.maxNormal:
+                self.showMaximized()
+                self.maxNormal = not self.maxNormal
+                self.maxToolButton.setIcon(self.restorePix)
+            else:
+                self.showNormal()
+                self.maxNormal = not self.maxNormal
+                self.maxToolButton.setIcon(self.maxPix)
 
     def mouseMoveEvent(self, e):
         self.move(e.globalPos() - self.clickPos)
+        
+
     
-    @pyqtSlot()
-    def on_kbBackPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        self.stackedWidget.setCurrentIndex(0)
-    
-    @pyqtSlot()
-    def on_cjBackPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        self.stackedWidget.setCurrentIndex(0)
-    
-    @pyqtSlot()
-    def on_yxkcBackPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        self.stackedWidget.setCurrentIndex(0)
+
         
 def main():
     import sys
