@@ -32,25 +32,28 @@ class ProcessorThread(QThread):
         self.page = page
 
 class CjParser(HTMLParser):
-    getData = False
-    getDatelData1 = 0
-    tdIter = -1
-    userViewState = ''
-    tagflag = {'span':False,
-               'td':False,
-               'tr':False,
-               'input':False}
-    dataflag = {'span id="lbl_xy"':False,
-                'span id="lbl_zy"':False,
-                'span id="lbl_zyfx"':False,
-                'span id="lbl_xzb:':False, 
-                'span id="lbl_zymc"':False}
-    cjData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
-    Cj = []
-    xy = ''
-    zy = ''
-    zyfx = ''
-    xzb = ''
+    def __init__(self):
+        super().__init__()
+        self.getData = False
+        self.getDatelData1 = 0
+        self.tdIter = -1
+        self.userViewState = ''
+        self.tagflag = {'span':False,
+                        'td':False,
+                        'tr':False,
+                        'input':False}
+        self.dataflag = {'span id="lbl_xy"':False,
+                         'span id="lbl_zy"':False,
+                         'span id="lbl_zyfx"':False,
+                         'span id="lbl_xzb:':False, 
+                         'span id="lbl_zymc"':False}
+        self.cjData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
+        self.Cj = []
+        self.xy = ''
+        self.zy = ''
+        self.zyfx = ''
+        self.xzb = ''
+        
     def handle_starttag(self,tag,attrs):
         if self.getData:
             if tag == 'span':
@@ -133,32 +136,34 @@ class CjParser(HTMLParser):
             self.getData = True
 
 class KbParser(HTMLParser):
-    getData = False
-    getData2 = False
-    getData3 = False
-    getData4 = False
-    tdIter = 0
-    trIter = 0
-    TdIter = 0
-    TrIter = 0
-    userViewState = ''
-    xnd = []
-    xqd = []
-    Kb = []
-    kbData = ['', '', '', '', '', '', '']
-    Sjk = []
-    sjkData = ['' ,'', '' ,'' ,'', '']
-    Sxk = []
-    sxkData = ['' ,'' ,'' ,'', '', '', '']
-    Wap =[]
-    wapData = ['' ,'', '' ,'', '']
-    tagflag = {'span':False,
-               'td':False,
-               'tr':False,
-               'input':False, 
-               'table':False, 
-               'select':0, 
-               'option':0}
+    def __init__(self):
+        super().__init__()
+        self.getData = False
+        self.getData2 = False
+        self.getData3 = False
+        self.getData4 = False
+        self.tdIter = 0
+        self.trIter = 0
+        self.TdIter = 0
+        self.TrIter = 0
+        self.userViewState = ''
+        self.xnd = []
+        self.xqd = []
+        self.Kb = []
+        self.kbData = ['', '', '', '', '', '', '']
+        self.Sjk = []
+        self.sjkData = ['' ,'', '' ,'' ,'', '']
+        self.Sxk = []
+        self.sxkData = ['' ,'' ,'' ,'', '', '', '']
+        self.Wap =[]
+        self.wapData = ['' ,'', '' ,'', '']
+        self.tagflag = {'span':False,
+                        'td':False,
+                        'tr':False,
+                        'input':False, 
+                        'table':False, 
+                        'select':0, 
+                        'option':0}
     
     def handle_starttag(self,tag,attrs):
         if tag == 'body':
@@ -261,16 +266,20 @@ class KbParser(HTMLParser):
             self.tagflag['td'] = False
 
 class YxkcParser(HTMLParser):
-    getData = False
-    tdIter = 0
-    trIter = 0
-    userViewState = ''
-    tagflag = {'table':False,
-               'td':False,
-               'tr':False,
-               'input':False}
-    yxkcData = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
-    Yxkc = []
+    
+    def __init__(self):
+        super().__init__()
+        self.getData = False
+        self.tdIter = 0
+        self.trIter = 0
+        self.userViewState = ''
+        self.tagflag = {'table':False,
+                        'td':False,
+                        'tr':False,
+                        'input':False}
+        self.yxkcData = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+        self.Yxkc = []
+
     def handle_starttag(self,tag,attrs):
         if self.getData:
             if tag == 'table':
@@ -314,67 +323,134 @@ class YxkcParser(HTMLParser):
             self.getData = True
 
 class XtxParser(HTMLParser):
-    getData = False
-    txFlag = False
-    tdIter = 0
-    trIter = 0
-    userViewState = ''
-    pageSize = 16
-    xtxError = ''
-    tagflag = {'table':False, 
-                   'td':False,
-                   'tr':False,
-                   'input':False, 
-                   'span':False, 
-                   'script':False}
-    xtxData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
-    Xtx = []
-    txData = ['', '', '', '', '', '', '', '', '', '', '', '', '']
-    Tx = []
 
+    def __init__(self):
+        super().__init__()
+        self.txFlag = False
+        self.tdIter = 0
+        self.trIter = 0
+
+        self.xtxError = ''
+        self.tagflag = {'table':False, 
+                             'td':False,
+                             'tr':False,
+                             'input':False, 
+                             'span dpkcmcGrid_lblTotalRecords':False,
+                             'span dpkcmcGrid_lblCurrentPage':False,  
+                             'span dpkcmcGrid_lblTotalPages':False, 
+                             'script':False, 
+                             'select ddl_xqbs':False, 
+                             'select ddl_sksj':False, 
+                             'select ddl_kcgs':False, 
+                             'select ddl_ywyl':False}
+        self.xtxData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
+        self.Xtx = []
+        self.txData = ['', '', '', '', '', '', '', '', '', '', '', '', '']
+        self.Tx = []
+        
+        self.userViewState = ''
+
+        self.xqbs = 0
+        self.sksj = []
+        self.kcgs = []
+        self.ywyl = []
+        self.currentSksj = ''
+        self.currentKcgs = ''
+        self.currentYwyl = ''
+        self.currentPage = 0
+        self.totalPage = 0
+        self.pageSize = 0
+        self.currentMyxs = 0
+        
     def handle_starttag(self,tag,attrs):
-        if self.getData:
-            if tag == 'table':
-                for name,value in attrs:
-                    if name == 'id':
-                        if value == 'kcmcGrid':
-                            self.tagflag['table'] = True
-                            self.trIter = 0
-                            break
-                        elif value == 'DataGrid2':
-                            self.tagflag['table'] = True
-                            self.trIter = 0
-                            self.txFlag = True
-                            break
-            elif tag == 'tr':
-                if self.tagflag['table']:
-                    self.tagflag['tr'] = True
-                    self.tdIter = 0
-                    self.trIter += 1
-            elif tag == 'td':
-                if self.tagflag['tr']:
-                    self.tagflag['td'] = True
-                    self.tdIter += 1
-            elif tag == 'input':
-                if self.tagflag['td']:
+        if tag == 'table':
+            for name,value in attrs:
+                if name == 'id':
+                    if value == 'kcmcGrid':
+                        self.tagflag['table'] = True
+                        self.trIter = 0
+                        break
+                    elif value == 'DataGrid2':
+                        self.tagflag['table'] = True
+                        self.trIter = 0
+                        self.txFlag = True
+                        break
+        elif tag == 'tr':
+            if self.tagflag['table']:
+                self.tagflag['tr'] = True
+                self.tdIter = 0
+                self.trIter += 1
+        elif tag == 'td':
+            if self.tagflag['tr']:
+                self.tagflag['td'] = True
+                self.tdIter += 1
+                if self.tdIter == 5 and not self.txFlag:
                     for name, value in attrs:
-                        if name == 'type' and value == 'checkbox':
-                            self.xtxData[self.tdIter-1] = attrs[2][1]
-                            break
+                        if name == 'title':
+                            self.xtxData[self.tdIter - 1] = value
+        elif tag == 'a':
+            if self.tagflag['td']:
+                for name, value in attrs:
+                    if name == 'onclick' and value == "return confirm('你真的要退选此门课吗？');":
+                        self.txData[self.tdIter - 1] = attrs[1][1][attrs[1][1].find("'")+1:]
+                        self.txData[self.tdIter - 1] = self.txData[self.tdIter - 1][:self.txData[self.tdIter - 1].find("'")]
+                        self.txData[self.tdIter - 1] = self.txData[self.tdIter - 1].replace('$', ':')
+        elif tag == 'input':
+            if self.tagflag['td']:
+                for name, value in attrs:
+                    if name == 'type' and value == 'checkbox':
+                        self.xtxData[self.tdIter-1] = attrs[2][1]
+                        break
+            else:
+                for name,value in attrs:
+                    if name == 'name' and value == 'dpkcmcGrid:txtPageSize':
+                        self.currentMyxs = attrs[2][1]
+                    if name == 'name' and value == '__VIEWSTATE':
+                        self.userViewState = attrs[2][1]
+                        #self.userViewState = urllib.parse.quote(self.userViewState, safe = '')
+                        break
         elif tag == 'span':
             for name, value in attrs:
                 if name == 'id' and value == 'dpkcmcGrid_lblTotalRecords':
-                    self.tagflag['span'] = True
+                    self.tagflag['span dpkcmcGrid_lblTotalRecords'] = True
+                elif name =='id' and value == 'dpkcmcGrid_lblCurrentPage':
+                    self.tagflag['span dpkcmcGrid_lblCurrentPage'] = True
+                elif name == 'id' and value =='dpkcmcGrid_lblTotalPages':
+                    self.tagflag['span dpkcmcGrid_lblTotalPages'] = True
         elif tag == 'script':
             for name, value in attrs:
                 if name == 'language' and value == 'javascript':
                     self.tagflag['script'] = True
-        if tag == 'input':
-            for name,value in attrs:
-                if name == 'name' and value == '__VIEWSTATE':
-                    self.userViewState = attrs[2][1]
-                    self.userViewState = urllib.parse.quote(self.userViewState, safe = '')
-                    break
+        elif tag == 'select':
+            for name, value in attrs:
+                if name =='name' and value =='ddl_xqbs':
+                    self.tagflag['select ddl_xqbs'] = True
+                elif name == 'name' and value =='ddl_sksj':
+                    self.tagflag['select ddl_sksj'] = True
+                elif name == 'name' and value == 'ddl_kcgs':
+                    self.tagflag['select ddl_kcgs'] = True
+                elif name == 'name'and value =='ddl_ywyl':
+                    self.tagflag['select ddl_ywyl'] = True
+        elif tag == 'option':
+            for name, value in attrs:
+                if name == 'selected':
+                    if self.tagflag['select ddl_kcgs']:
+                        self.currentKcgs = attrs[1][1]
+                    elif self.tagflag['select ddl_sksj']:
+                        self.currentSksj = attrs[1][1]
+                    elif self.tagflag['select ddl_ywyl']:
+                        self.currentYwyl = attrs[1][1]
+                        print(self.currentYwyl)
+                elif name == 'value':
+                    if self.tagflag['select ddl_xqbs']:
+                        self.xqbs = value
+                    elif self.tagflag['select ddl_kcgs']:
+                        self.kcgs.append(value)
+                    elif self.tagflag['select ddl_sksj']:
+                        self.sksj.append(value)
+                    elif self.tagflag['select ddl_ywyl']:
+                        self.ywyl.append(value)
+
 
     def handle_endtag(self,tag):
         if tag == 'table':
@@ -392,19 +468,34 @@ class XtxParser(HTMLParser):
         elif tag == 'td':
             self.tagflag['td'] = False
         elif tag == 'span':
-            self.tagflag['span'] = False
+            self.tagflag['span dpkcmcGrid_lblTotalRecords'] = False
+            self.tagflag['span dpkcmcGrid_lblTotalRecords'] = False
+            self.tagflag['span dpkcmcGrid_lblCurrentPage'] = False  
+            self.tagflag['span dpkcmcGrid_lblTotalPages'] = False 
+        elif tag == 'select':
+            self.tagflag['select ddl_xqbs'] = False
+            self.tagflag['select ddl_kcgs'] = False
+            self.tagflag['select ddl_sksj'] = False
+            self.tagflag['select ddl_ywyl'] = False
             
     def handle_data(self,data):
         if self.tagflag['td'] and self.trIter >1:
             if self.txFlag:
-                self.txData[self.tdIter-1]=data
+                if self.tdIter == 13:
+                    pass
+                else:
+                    self.txData[self.tdIter-1]=data
             else:
-                if self.tdIter == 1:
+                if self.tdIter == 1 or self.tdIter == 5:
                     pass
                 else:
                     self.xtxData[self.tdIter-1] = data
-        elif self.tagflag['span']:
+        elif self.tagflag['span dpkcmcGrid_lblTotalRecords']:
             self.pageSize = data
+        elif self.tagflag['span dpkcmcGrid_lblCurrentPage']:
+            self.currentPage = data
+        elif self.tagflag['span dpkcmcGrid_lblTotalPages']:
+            self.totalPage = data
         elif self.tagflag['script']:
             if data[:5] == 'alert':
                 self.xtxError = data[7:]
@@ -422,7 +513,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     mainPath = ''
     menuPath = MenuPath.MenuPath()
     bgRGB = MenuPath.RGBdata()
-    oldIndex = QModelIndex()
+    oldIndex1 = QModelIndex()
+    oldIndex2 = QModelIndex()
+    #eventTagrget = ''
     
     Cj = []
     Kb = []
@@ -431,12 +524,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     Yxkc = []
     Xtx = []
     Tx = []
+    xtxViewState = ''
     loadCjdataFlag = 0
     loadKbdataFlag = 0
     loadYxkcdataFlag = 0
     loadXtxdataFlag = 0
     maxNormal = False
-    iid = 0
     progressUpdated=pyqtSignal(int)
     
     def __init__(self, parent=None, loginW = None):
@@ -507,7 +600,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
-        self.xtxTableView.verticalHeader().sectionClicked.connect(self.enableButton, Qt.QueuedConnection)
+        self.xtxTableView.verticalHeader().sectionClicked.connect(self.enableButton1, Qt.QueuedConnection)
+        self.txTableView.verticalHeader().sectionClicked.connect(self.enableButton2, Qt.QueuedConnection)
         self.setWindowFlags(Qt.FramelessWindowHint)
         
     @pyqtSlot()
@@ -628,22 +722,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stackedWidget.setCurrentIndex(5)
 
     @pyqtSlot(int)
-    def enableButton(self, row):
+    def enableButton1(self, row):
         index = self.xtxTable.index(row, 0)
-        button = self.xtxTableView.indexWidget(self.oldIndex)
+        button = self.xtxTableView.indexWidget(self.oldIndex1)
         if not button == None:
             button.setEnabled(False)
         button = self.xtxTableView.indexWidget(index)
-        self.oldIndex = QModelIndex(index)
+        self.oldIndex1 = QModelIndex(index)
         button.setEnabled(True)
-
+    
+    @pyqtSlot(int)
+    def enableButton2(self, row):
+        index = self.txTable.index(row, 12)
+        button = self.txTableView.indexWidget(self.oldIndex2)
+        if not button == None:
+            button.setEnabled(False)
+        button = self.txTableView.indexWidget(index)
+        self.oldIndex2 = QModelIndex(index)
+        button.setEnabled(True)
+        
     @pyqtSlot()
     def pickThisLesson(self):
         item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
-        pickLesson = str (item.text())
-        pickLesson = pickLesson.encode('gb2312')
-        pickLesson = urllib.parse.quote(pickLesson, safe = '')
-        plBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+self.xkViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs=2&ddl_sksj=&TextBox1=&'+pickLesson+'=on&dpkcmcGrid%3AtxtChoosePage=1&dpkcmcGrid%3AtxtPageSize='+str(self.pageSize)+'&Button1=++%CC%E1%BD%BB++'
+#        pickLesson = str (item.text())
+#        pickLesson = pickLesson.encode('gb2312')
+#        pickLesson = urllib.parse.quote(pickLesson, safe = '')
+        self.eventTagrget = ''
+        #plBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+self.xtxParser.userViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs='+self.xtxParser.xqbs+'&ddl_sksj=&TextBox1=&'+pickLesson+'=on&dpkcmcGrid%3AtxtChoosePage='+self.yComboBox.currentText()+'&dpkcmcGrid%3AtxtPageSize='+self.tComboBox.currentText()+'&Button1=++%CC%E1%BD%BB++'
+        plBody = {'__EVENTTARGET':self.eventTagrget, 
+        '__EVENTARGUMENT':'', 
+        '__VIEWSTATE':self.xtxParser.userViewState, 
+        'ddl_kcxz':'', 
+        'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+        'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+        'ddl_xqbs':self.xtxParser.xqbs, 
+        'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+        'TextBox1':'', 
+        item.text():'on', 
+        'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+        'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+        'dpDataGrid2:AtxtChoosePage':'1', 
+        'dpDataGrid2:AtxtPageSize':'150', 
+        'Button1': '  �ύ  '}
+        plBody = urllib.parse.urlencode(query = plBody)
         plBody = plBody.encode('ISO-8859-1')
         plHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
@@ -665,14 +786,71 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.loginError = e.getcode()
             print(self.loginError)
         else:
-            xtxParser = XtxParser()
-            xtxParser.feed(plData.read().decode('gb2312'))
-            print('a')
-            if xtxParser.xtxError != '' :
-                QMessageBox.critical(self,'错误', xtxParser.xtxError)
+            self.xtxParser = XtxParser()
+            self.xtxParser.feed(plData.read().decode('gb2312'))
+            if self.xtxParser.xtxError != '' :
+                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
             else:
                 QMessageBox.critical(self,'成功', 'yes')
-                self.xkViewState = xtxParser.userViewState
+                self.Tx = []
+                for txdata in self.xtxParser.Tx:
+                    self.Tx.append(txdata)
+                #self.xtxViewState = xtxParser.userViewState
+                self.showTxdata()
+
+    def dropThisLesson(self):
+        item = self.txTable.item(self.txTableView.currentIndex().row(), 12)
+#        dropLesson = item.text().encode('gb2312')
+#        dropLesson = urllib.parse.quote(dropLesson, safe = '')
+        self.eventTagrget = item.text()
+        #dlBody = '__EVENTTARGET='+dropLesson+'&__EVENTARGUMENT=&__VIEWSTATE='+self.xtxParser.userViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs='+self.xtxParser.xqbs+'&ddl_sksj=&TextBox1=&dpkcmcGrid%3AtxtChoosePage=1&dpkcmcGrid%3AtxtPageSize='+self.xtxParser.pageSize+'&dpDataGrid2%3AtxtChoosePage=1&dpDataGrid2%3AtxtPageSize=150'
+        dlBody = {'__EVENTTARGET':self.eventTagrget, 
+                      '__EVENTARGUMENT':'', 
+                      '__VIEWSTATE':self.xtxParser.userViewState, 
+                      'ddl_kcxz':'', 
+                      'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+                      'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+                      'ddl_xqbs':self.xtxParser.xqbs, 
+                      'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+                      'TextBox1':'', 
+                      'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+                      'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+                      'dpDataGrid2:AtxtChoosePage':'1', 
+                      'dpDataGrid2:AtxtPageSize':'150'}
+        dlBody = urllib.parse.urlencode(query = dlBody)
+        dlBody = dlBody.encode('ISO-8859-1')
+        dlHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Content-Length':len(dlBody),
+                           'Cache-Control':'max-age=0',
+                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                           'Origin':'http://jw2005.scuteo.com',
+                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                           'Content-Type':'application/x-www-form-urlencoded',
+                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
+                           'Accept-Encoding':'gzip,deflate,sdch',
+                           'Accept-Language':'zh-CN,zh;q=0.8',
+                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                           'Cookie':self.userCookie}
+        dlReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = dlBody, headers = dlHeaders)
+        try :
+            dlData = urllib.request.urlopen(url = dlReq)
+        except urllib.error.HTTPError as e:
+            self.loginError = e.getcode()
+            print(self.loginError)
+        else:
+            self.xtxParser = XtxParser()
+            self.xtxParser.feed(dlData.read().decode('gb2312'))
+            if self.xtxParser.xtxError != '' :
+                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
+            else:
+                QMessageBox.critical(self,'成功', 'yes')
+                self.Tx = []
+                for txdata in self.xtxParser.Tx:
+                    self.Tx.append(txdata)
+                #self.xtxViewState = xtxParser.userViewState
+                self.showTxdata()
+                
             
     @pyqtSlot()
     def on_startSkPushButton_clicked(self):
@@ -766,10 +944,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Gpa = 0
         self.Zhiy = 0
         self.Point = 0
-#        if self.showCjdataFlag == 0:
-#            self.showCjdataFlag = 1
-#        else:
-        for i in range(1,self.iid):
+        for i in range(0,self.cjTable.rowCount()):
             self.cjTable.removeRow(0)
         i = 1
         for cjdata in self.Cj:
@@ -809,16 +984,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cjTabelView.resizeColumnsToContents ()
             #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
-            self.iid = i
         
     def showCjdata2(self):
         self.Gpa = 0
         self.Zhiy = 0
         self.Point = 0
-#        if self.showCjdataFlag == 0:
-#            self.showCjdataFlag = 1
-#        else:
-        for i in range(1,self.iid):
+        for i in range(0,self.cjTable.rowCount()):
             self.cjTable.removeRow(0)
         i = 1
         for cjdata in self.Cj:
@@ -852,7 +1023,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cjTabelView.resizeColumnsToContents ()
             #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
-            self.iid = i
     
     def cjTransfer(self,s):
         if s == '优秀':
@@ -895,7 +1065,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Kb = kbParser.Kb
         self.Sjk = kbParser.Sjk
         self.Wap = kbParser.Wap
-        self.userKbViewState = kbParser.userViewState
+        self.kbViewState = kbParser.userViewState
         #self.kbXnComboBox.addItems(kbParser.xnd)
         #self.kbXqComboBox.addItems(kbParser.xqd)
 
@@ -992,7 +1162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         yxkcParser = YxkcParser()
         yxkcParser.feed(s)
         self.Yxkc = yxkcParser.Yxkc
-        self.userYxkcViewState = yxkcParser.userViewState
+        self.yxkcViewState = yxkcParser.userViewState
         self.loadYxkcdataFlag = 1
         
     def showYxkcdata(self):
@@ -1027,32 +1197,66 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.yxkcTableView.resizeRowsToContents()
         
     def loadXtxdata(self):
-        xtxHeaders = {'Host':'jw2005.scuteo.com',
-                           'Connection':'keep-alive',
-                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
-                           'Referer':self.mainUrl+self.mainPath,
-                           'Accept-Encoding':'gzip,deflate,sdch',
-                           'Accept-Language':'zh-CN,zh;q=0.8',
-                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
-                           'Cookie':self.userCookie}
-                           
-        xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
-        try :
-            xtxData = urllib.request.urlopen(url = xtxReq)
-        except urllib.error.HTTPError as e:
-            self.loginError = e.getcode()
-            print(self.loginError)
-        else:
-            xtxParser = XtxParser()
-            xtxParser.feed(xtxData.read().decode('gb2312'))
-            xtxParser.getData = True
-            userViewState = xtxParser.userViewState
-            self.pageSize = xtxParser.pageSize
-         
-            xtxBody = '__EVENTTARGET=dpkcmcGrid%3AtxtPageSize&__EVENTARGUMENT=&__VIEWSTATE='+userViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs=2&ddl_sksj=&TextBox1=&dpkcmcGrid%3AtxtChoosePage=1&dpkcmcGrid%3AtxtPageSize='+str(self.pageSize)
-            xtxBody = xtxBody.encode('ISO-8859-1')
-            xtxHeaders = {'Host':'jw2005.scuteo.com',
+#        xtxHeaders = {'Host':'jw2005.scuteo.com',
+#                           'Connection':'keep-alive',
+#                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+#                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+#                           'Referer':self.mainUrl+self.mainPath,
+#                           'Accept-Encoding':'gzip,deflate,sdch',
+#                           'Accept-Language':'zh-CN,zh;q=0.8',
+#                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+#                           'Cookie':self.userCookie}
+#                           
+#        xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
+#        try :
+#            xtxData = urllib.request.urlopen(url = xtxReq)
+#        except urllib.error.HTTPError as e:
+#            self.loginError = e.getcode()
+#            print(self.loginError)
+#        else:
+#            xtxParser = XtxParser()
+#            xtxParser.feed(xtxData.read().decode('gb2312'))
+#            userViewState = xtxParser.userViewState
+#            self.pageSize = xtxParser.pageSize
+#            self.xqbs = xtxParser.xqbs
+#            self.sksjComboBox.addItems(xtxParser.sksj)
+#            self.kcgsComboBox.addItems(xtxParser.kcgs)
+#            self.ywylComboBox.addItems(xtxParser.ywyl)
+#            self.sksjComboBox.setCurrentIndex(self.sksjComboBox.findText(xtxParser.currentSksj))
+#            self.kcgsComboBox.setCurrentIndex(self.kcgsComboBox.findText(xtxParser.currentKcgs))
+#            self.ywylComboBox.setCurrentIndex(self.ywylComboBox.findText(xtxParser.currentYwyl))
+#            del xtxParser.Tx[:]
+            
+            if self.loadXtxdataFlag == 1:
+                #xtxBody = '__EVENTTARGET='+self.eventTagrget+'&__EVENTARGUMENT=&__VIEWSTATE='+self.xtxViewState+'&ddl_kcxz=&ddl_ywyl='+urllib.parse.quote(self.ywylComboBox.currentText().encode('gb2312'))+'&ddl_kcgs=&ddl_xqbs='+self.xqbs +'&ddl_sksj=&TextBox1=&dpkcmcGrid%3AtxtChoosePage='+self.yComboBox.currentText()+'&dpkcmcGrid%3AtxtPageSize='+self.tComboBox.currentText()
+#                xtxBody = {'__EVENTTARGET':self.eventTagrget, 
+#                                '__EVENTARGUMENT':'', 
+#                                '__VIEWSTATE':self.xtxParser.userViewState, 
+#                                'ddl_kcxz':'', 
+#                                'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+#                                'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+#                                'ddl_xqbs':self.xtxParser.xqbs, 
+#                                'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+#                                'TextBox1':'', 
+#                                'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+#                                'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs}
+                xtxBody = {'__EVENTTARGET':self.eventTagrget, 
+                '__EVENTARGUMENT':'', 
+                '__VIEWSTATE':self.xtxParser.userViewState, 
+                'ddl_kcxz':'', 
+                'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+                'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+                'ddl_xqbs':self.xtxParser.xqbs, 
+                'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+                'TextBox1':'', 
+                'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+                'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+                'dpDataGrid2:AtxtChoosePage':'1', 
+                'dpDataGrid2:AtxtPageSize':'150'}
+                
+                xtxBody = urllib.parse.urlencode(query = xtxBody)
+                xtxBody = xtxBody.encode('ISO-8859-1')
+                xtxHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
                            'Content-Length':len(xtxBody),
                            'Cache-Control':'max-age=0',
@@ -1065,22 +1269,85 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Accept-Language':'zh-CN,zh;q=0.8',
                            'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                            'Cookie':self.userCookie}
-            xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = xtxBody,headers = xtxHeaders)
+                xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = xtxBody,headers = xtxHeaders)
+            else:
+                xtxHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                           'Referer':self.mainUrl+self.mainPath,
+                           'Accept-Encoding':'gzip,deflate,sdch',
+                           'Accept-Language':'zh-CN,zh;q=0.8',
+                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                           'Cookie':self.userCookie}
+                xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
             try :
                 xtxData = urllib.request.urlopen(url = xtxReq)
             except urllib.error.HTTPError as e:
                 self.loginError = e.getcode()
                 print(self.loginError)
             else:
-                xtxParser.feed(xtxData.read().decode('gb2312'))
-                self.xkViewState = xtxParser.userViewState
-                for xtxdata in xtxParser.Xtx:
+                self.xtxParser = XtxParser()
+                self.xtxParser.feed(xtxData.read().decode('gb2312'))
+
+#                self.xtxViewState = xtxParser.userViewState
+#                self.pageSize = xtxParser.pageSize
+#                self.xqbs = xtxParser.xqbs
+#                self.currentMyxs = xtxParser.currentMyxs
+#                self.currentPage = int(xtxParser.currentPage)-1
+#                self.currentKcgs = xtxParser.currentKcgs
+#                self.currentSksj = xtxParser.currentSksj
+                
+                self.sksjComboBox.clear()
+                self.kcgsComboBox.clear()
+                self.ywylComboBox.clear()
+                self.yComboBox.clear()
+                self.tComboBox.clear()
+
+                
+                
+                self.sksjComboBox.addItems(self.xtxParser.sksj)
+                self.kcgsComboBox.addItems(self.xtxParser.kcgs)
+                self.ywylComboBox.addItems(self.xtxParser.ywyl)
+                self.sksjComboBox.setCurrentIndex(self.sksjComboBox.findText(self.xtxParser.currentSksj))
+                self.kcgsComboBox.setCurrentIndex(self.kcgsComboBox.findText(self.xtxParser.currentKcgs))
+                self.ywylComboBox.setCurrentIndex(self.ywylComboBox.findText(self.xtxParser.currentYwyl))
+                
+                if self.xtxParser.totalPage:
+                    yData = [str(i) for i in range(1, int(self.xtxParser.totalPage)+1)]
+                    self.yComboBox.addItems(yData)
+                    self.yComboBox.setCurrentIndex(int(self.xtxParser.currentPage)-1)
+                else:
+                    self.yComboBox.addItem('')
+                    self.xtxParser.totalPage = ''
+                    self.xtxParser.pageSize = ''
+                    self.xtxParser.currentPage = ''
+                
+                if self.xtxParser.currentMyxs:
+                    tData = [str(5),self.xtxParser.currentMyxs, str(int(self.xtxParser.pageSize)//2), self.xtxParser.pageSize]
+                    self.tComboBox.addItems(tData)
+                    self.tComboBox.setCurrentIndex(self.tComboBox.findText(self.xtxParser.currentMyxs))
+                else:
+                    self.tComboBox.addItems('')
+                    self.xtxParser.currentMyxs = ''
+                    self.xtxParser.pageSize = ''
+                    self.xtxParser.currentPage = ''
+                    
+                self.xtxImformationLabel.setText('总共有'+str(self.xtxParser.pageSize)+'条')
+                
+                self.Xtx = []
+                self.Tx = []
+                for xtxdata in self.xtxParser.Xtx:
                     self.Xtx.append(xtxdata)
-                for txdata in xtxParser.Tx:
+                for txdata in self.xtxParser.Tx:
                     self.Tx.append(txdata)
                 self.loadXtxdataFlag = 1
+                
     
     def showXtxdata(self):
+
+        for i in range(0,self.xtxTable.rowCount()):            
+            self.xtxTable.removeRow(0)
         i = 0
         for xtxdata in self.Xtx:
             j = 0
@@ -1113,6 +1380,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.xtxTableView.resizeColumnsToContents ()
         #self.xtxTableView.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
         self.xtxTableView.resizeRowsToContents()
+        self.showTxdata()
+
+    def showTxdata(self):
+        for i in range(0,self.txTable.rowCount()):
+            self.txTable.removeRow(0)
+            
         i = 0
         for txdata in self.Tx:
             j = 0
@@ -1134,9 +1407,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 j +=1
             i +=1
         self.txTableView.setModel(self.txTable)
+        for j in range(0, i):
+            pickButton = QPushButton('退选')
+            pickButton.setAutoFillBackground(False)
+            pickButton.setFixedSize(60, 30)
+            pickButton.setEnabled(False)
+            index = self.txTable.index(j, 12)
+            self.txTableView.setIndexWidget(index, pickButton)
+            pickButton.clicked.connect(self.dropThisLesson, Qt.QueuedConnection)
+            
         self.txTableView.resizeColumnsToContents ()
         #self.xtxTableView.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
         self.txTableView.resizeRowsToContents()
+    
+
+                
         
     def logout(self):
         logoutHeaders = {'Host':'jw2005.scuteo.com', 
@@ -1170,7 +1455,159 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def mouseMoveEvent(self, e):
         self.move(e.globalPos() - self.clickPos)
-        
+
+#    def showXtxdata2(self):
+#        kcgs = self.kcgsComboBox.currentText()
+#        sksj = self.sksjComboBox.currentText()
+#        ywyl = self.ywylComboBox.currentText()
+#        for i in range(0,self.xtxTable.rowCount()):
+#            self.xtxTable.removeRow(0)
+#        i = 0
+#        for xtxdata in self.Xtx:
+#            kcgsflag = 0
+#            sksjflag = 0
+#            ywylflag = 0
+#            if  xtxdata[11] == kcgs or kcgs == '':
+#                kcgsflag = 1
+#            if xtxdata[4] == sksj or sksj == '': 
+#                sksjflag = 1
+#            if ywyl == '有':
+#                if int(xtxdata[10])>0:
+#                    ywylflag = 1
+#            elif ywyl == '无':
+#                if int(xtxdata[10])<=0:
+#                    ywylflag = 1
+#            elif ywyl =='':
+#                ywylflag = 1        
+#            if kcgsflag == 1 and sksjflag == 1 and ywylflag == 1:
+#                j = 0
+#                self.xtxTable.insertRow(i)
+#                for data in xtxdata:
+#                    font = QFont()
+#                    font.setFamily("微软雅黑")
+#                    font.setPointSize(12)
+#                    item = QStandardItem(data)
+#                    item.setFont(font)
+#                    if  i%2 ==1:
+#                        brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
+#                        brush.setStyle(Qt.SolidPattern)
+#                        item.setBackground(brush)
+#                    self.xtxTable.setItem(i,j,item)
+#                    j = j + 1
+#                i =i + 1
+#        self.xtxTableView.setModel(self.xtxTable)
+#        self.xtxTableView.resizeColumnsToContents ()
+#        #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+#        for j in range(0, i):
+#            pickButton = QPushButton('选这门课')
+#            pickButton.setAutoFillBackground(False)
+#            pickButton.setFixedSize(60, 30)
+#            pickButton.setEnabled(False)
+#            index = self.xtxTable.index(j, 0)
+#            self.xtxTableView.setIndexWidget(index, pickButton)
+#            pickButton.clicked.connect(self.pickThisLesson, Qt.QueuedConnection)
+            
+    @pyqtSlot(str)
+    def on_kcgsComboBox_activated(self, p0):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentKcgs == p0:
+            self.eventTagrget = 'ddl_kcxz'
+            self.xtxParser.currentKcgs= p0
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot(str)
+    def on_sksjComboBox_activated(self, p0):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentSksj == p0:
+            self.eventTagrget = 'ddl_sksj'
+            self.xtxParser.currentSksj= p0
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot(str)
+    def on_ywylComboBox_activated(self, p0):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentYwyl == p0:
+            self.eventTagrget = 'ddl_ywyl'
+            self.xtxParser.currentYwyl = p0
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot(int)
+    def on_tComboBox_activated(self, index):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentMyxs == index:
+            self.eventTagrget = 'dpkcmcGrid:txtPageSize'
+            self.xtxParser.currentPage = 1
+            self.xtxParser.currentMyxs = self.tComboBox.itemText(index)
+            self.loadXtxdata()
+            self.showXtxdata()
+
+    
+    @pyqtSlot(int)
+    def on_yComboBox_activated (self, index):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentPage == index:
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(index)
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot()
+    def on_xtxSyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.yComboBox.currentIndex()>0:         
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(0)
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot()
+    def on_xtxSyyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.yComboBox.currentIndex()>0: 
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(self.yComboBox.currentIndex()-1)
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot()
+    def on_xtxXyyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if (self.yComboBox.currentIndex()+1) < int(self.xtxParser.totalPage):
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(self.yComboBox.currentIndex()+1)
+            self.loadXtxdata()
+            self.showXtxdata()
+    
+    @pyqtSlot()
+    def on_xtxMyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if (self.yComboBox.currentIndex()+1) < int(self.xtxParser.totalPage):
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(int(self.xtxParser.totalPage)-1)
+            self.loadXtxdata()
+            self.showXtxdata()
+
 
     
 

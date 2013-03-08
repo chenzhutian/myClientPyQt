@@ -25,17 +25,19 @@ class ProcessorThread(QThread):
 
     def run(self):
         self.func(*self.args)
-        self.destroy()
+        self.exit()
 
 class LoginParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
         
-    tagflag = {'script':False,
-               'span':False}
-    dataflag = {'script language="javascript"':False,
-                'span id="xhxm"':False}
-    loginError = ''
-    xm = ''
-    path = MenuPath.MenuPath()
+        self.tagflag = {'script':False,
+                             'span':False}
+        self.dataflag = {'script language="javascript"':False,
+                              'span id="xhxm"':False}
+        self.loginError = ''
+        self.xm = ''
+        self.path = MenuPath.MenuPath()
     
     def encodeUrl(self,s):
         pos = s.find(self.xm)
