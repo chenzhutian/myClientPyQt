@@ -31,6 +31,35 @@ class ProcessorThread(QThread):
         self.name = name
         self.page = page
 
+class XtxProcessorThread(QThread):
+    finishLoading = pyqtSignal(int)
+    def __init__(self, func = None, args = None, name = None, parent = None):
+        super(XtxProcessorThread, self).__init__(parent)
+        self.moveToThread(self)
+    
+    def run(self):
+        self.func(*self.args)
+        self.finishLoading.emit(self.flag)
+        self.exit()
+    
+    def setThread(self, func, args, name, flag = 1):
+        self.func = func
+        self.args = args
+        self.name = name
+        self.flag = flag
+        
+class shuaThread(QThread):
+    
+    def __init__(self, func = None, args = None, parent = None):
+        super(shuaThread, self).__init__(parent)
+        self.func = func
+        self.args = args
+        self.moveToThread(self)
+        
+    def run(self):
+        self.func(*self.args)
+        self.exit()
+        
 class CjParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -194,21 +223,6 @@ class KbParser(HTMLParser):
                         self.TrIter = 0
                         self.getData4 = False
                         self.getData3 = True
-#            elif tag == 'select':
-#                for name, value in attrs:
-#                    if name == 'name' and value == 'xnd':
-#                        self.tagflag['select'] =1
-#                    if name == 'name' and value == 'xqd':
-#                        self.tagflag['select'] = 2
-#            elif tag == 'option':
-#                if self.tagflag['select'] == 1:
-#                    for name, value in attrs:
-#                        if name == 'value':
-#                           self.xnd.append(value) 
-#                elif self.tagflag['select'] == 2:
-#                    for name, value in attrs:
-#                        if name == 'value':
-#                            self.xqd.append(value)
             elif tag == 'tr':
                 if self.tagflag['table']:
                     self.tagflag['tr'] = True
@@ -369,6 +383,7 @@ class XtxParser(HTMLParser):
                     if value == 'kcmcGrid':
                         self.tagflag['table'] = True
                         self.trIter = 0
+                        self.txFlag = False
                         break
                     elif value == 'DataGrid2':
                         self.tagflag['table'] = True
@@ -440,7 +455,6 @@ class XtxParser(HTMLParser):
                         self.currentSksj = attrs[1][1]
                     elif self.tagflag['select ddl_ywyl']:
                         self.currentYwyl = attrs[1][1]
-                        print(self.currentYwyl)
                 elif name == 'value':
                     if self.tagflag['select ddl_xqbs']:
                         self.xqbs = value
@@ -529,8 +543,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     loadKbdataFlag = 0
     loadYxkcdataFlag = 0
     loadXtxdataFlag = 0
+    shuakeFlag = 0
     maxNormal = False
     progressUpdated=pyqtSignal(int)
+    shuaSignal = pyqtSignal()
     
     def __init__(self, parent=None, loginW = None):
         """
@@ -592,17 +608,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.maxPix = QIcon(self.style().standardPixmap(QStyle.SP_TitleBarMaxButton))
         self.maxToolButton.setIcon(self.maxPix)
         self.restorePix = QIcon(self.style().standardPixmap(QStyle.SP_TitleBarNormalButton))
+        self.xtxProgressBar.setVisible(False)
         
         
         
         self.t1 = ProcessorThread()
+        self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection)
+        self.xtxThread = XtxProcessorThread()
+        self.xtxThread.finishLoading.connect(self.showXtxProgressing,Qt.QueuedConnection)
         self.timer = QTimer()
-        self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection) 
         self.timer.timeout.connect(self.loginAgain, Qt.QueuedConnection)
+        self.xtxTimer = QTimer()
+        self.xtxTimer.timeout.connect(self.shuaAgain, Qt.QueuedConnection)
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
         self.xtxTableView.verticalHeader().sectionClicked.connect(self.enableButton1, Qt.QueuedConnection)
         self.txTableView.verticalHeader().sectionClicked.connect(self.enableButton2, Qt.QueuedConnection)
+        self.shuaSignal.connect(self.shua, Qt.QueuedConnection)
         self.setWindowFlags(Qt.FramelessWindowHint)
+    
+
         
     @pyqtSlot()
     def creatWidget(self):
@@ -641,6 +665,78 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def updateProgress(self, value):
         self.lblProgress=str(value)
 
+    @pyqtSlot(int)
+    def showXtxProgressing(self, flag):
+        if flag == 1:
+            self.xtxProgressBar.setValue(100)
+            self.xtxProgressBar.setVisible(False)
+            self.showXtxdata()
+        elif flag == 2:
+            if self.xtxParser.xtxError != '' :
+                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
+                self.xtxProgressBar.setVisible(False)
+            else:
+                QMessageBox.critical(self,'成功', 'yes')
+                self.Tx = []
+                for txdata in self.xtxParser.Tx:
+                    self.Tx.append(txdata)
+                self.showTxdata()
+                self.xtxProgressBar.setVisible(False)
+        elif flag ==3:
+            if self.xtxParser.xtxError != '' :
+                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
+            else:
+                self.Xtx = []
+                for xtxdata in self.xtxParser.Xtx:
+                    self.Xtx.append(xtxdata)
+                for i in range(0,self.xtxTable.rowCount()):            
+                    self.xtxTable.removeRow(0)
+                i = 0
+                for xtxdata in self.Xtx:
+                    j = 0
+                    for data in xtxdata:
+                        font = QFont()
+                        font.setFamily("微软雅黑")
+                        font.setPointSize(12)
+                        item = QStandardItem(data)
+                        item.setFont(font)
+                        if  i%2 ==1:
+                            brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
+                            brush.setStyle(Qt.SolidPattern)
+                            item.setBackground(brush)
+                        item.setTextAlignment(Qt.AlignCenter)
+                        self.xtxTable.setItem(i,j,item)
+                        j +=1
+                    i +=1
+                self.xtxTableView.setModel(self.xtxTable)
+                for j in range(0, i):
+                    pickButton = QPushButton('刷这门课')
+                    pickButton.setAutoFillBackground(False)
+                    pickButton.setFixedSize(60, 30)
+                    pickButton.setEnabled(False)
+                    index = self.xtxTable.index(j, 0)
+                    self.xtxTableView.setIndexWidget(index, pickButton)
+                    pickButton.clicked.connect(self.shua, Qt.QueuedConnection)
+                self.xtxTableView.resizeColumnsToContents ()
+                self.xtxTable.setVerticalHeaderLabels(['1     '])
+                self.xtxProgressBar.setVisible(False)
+                #self.shuaSignal.emit()
+                
+    @pyqtSlot()
+    def shua(self):
+        self.t = shuaThread(self.shuake2, ())
+        self.kcmcLineEdit.setEnabled(False)
+        self.startSkPushButton.setEnabled(False)
+        self.timeOfShua = 0
+        self.xtxTimer.start(4000)
+    
+    @pyqtSlot()
+    def shuaAgain(self):
+        self.t.quit()
+        self.timeOfShua += 1
+        self.shuaLabel.setText('第'+str(self.timeOfShua)+'遍刷课,'+'反馈信息:'+self.xtxParser.xtxError)
+        self.t.start()
+        
     @pyqtSlot()
     def on_syToolButton_clicked(self):
         self.stackedWidget.setCurrentIndex(0)
@@ -743,12 +839,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
     @pyqtSlot()
     def pickThisLesson(self):
+        self.xtxThread.setThread(self.pickLesson, (), self.pickLesson.__name__, 2)
+        self.xtxThread.start()
+        self.xtxProgressBar.setVisible(True)
+        self.xtxProgressBar.setValue(10)
+        for i in range(24, 90):
+            if self.xtxProgressBar.value() == 100:
+                break
+            self.xtxProgressBar.setValue(i)
+            QThread.msleep (30)
+    
+    def pickLesson(self):
         item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
-#        pickLesson = str (item.text())
-#        pickLesson = pickLesson.encode('gb2312')
-#        pickLesson = urllib.parse.quote(pickLesson, safe = '')
         self.eventTagrget = ''
-        #plBody = '__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE='+self.xtxParser.userViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs='+self.xtxParser.xqbs+'&ddl_sksj=&TextBox1=&'+pickLesson+'=on&dpkcmcGrid%3AtxtChoosePage='+self.yComboBox.currentText()+'&dpkcmcGrid%3AtxtPageSize='+self.tComboBox.currentText()+'&Button1=++%CC%E1%BD%BB++'
         plBody = {'__EVENTTARGET':self.eventTagrget, 
         '__EVENTARGUMENT':'', 
         '__VIEWSTATE':self.xtxParser.userViewState, 
@@ -788,22 +891,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.xtxParser = XtxParser()
             self.xtxParser.feed(plData.read().decode('gb2312'))
-            if self.xtxParser.xtxError != '' :
-                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
-            else:
-                QMessageBox.critical(self,'成功', 'yes')
-                self.Tx = []
-                for txdata in self.xtxParser.Tx:
-                    self.Tx.append(txdata)
-                #self.xtxViewState = xtxParser.userViewState
-                self.showTxdata()
 
+    @pyqtSlot()
     def dropThisLesson(self):
+        self.xtxThread.setThread(self.dropLesson, (), self.dropLesson.__name__, 2)
+        self.xtxThread.start()
+        self.xtxProgressBar.setVisible(True)
+        self.xtxProgressBar.setValue(10)
+        for i in range(24, 90):
+            if self.xtxProgressBar.value() == 100:
+                break
+            self.xtxProgressBar.setValue(i)
+            QThread.msleep (30)
+
+    def dropLesson(self):
         item = self.txTable.item(self.txTableView.currentIndex().row(), 12)
-#        dropLesson = item.text().encode('gb2312')
-#        dropLesson = urllib.parse.quote(dropLesson, safe = '')
         self.eventTagrget = item.text()
-        #dlBody = '__EVENTTARGET='+dropLesson+'&__EVENTARGUMENT=&__VIEWSTATE='+self.xtxParser.userViewState+'&ddl_kcxz=&ddl_ywyl=&ddl_kcgs=&ddl_xqbs='+self.xtxParser.xqbs+'&ddl_sksj=&TextBox1=&dpkcmcGrid%3AtxtChoosePage=1&dpkcmcGrid%3AtxtPageSize='+self.xtxParser.pageSize+'&dpDataGrid2%3AtxtChoosePage=1&dpDataGrid2%3AtxtPageSize=150'
         dlBody = {'__EVENTTARGET':self.eventTagrget, 
                       '__EVENTARGUMENT':'', 
                       '__VIEWSTATE':self.xtxParser.userViewState, 
@@ -841,23 +944,285 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.xtxParser = XtxParser()
             self.xtxParser.feed(dlData.read().decode('gb2312'))
-            if self.xtxParser.xtxError != '' :
-                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
-            else:
-                QMessageBox.critical(self,'成功', 'yes')
-                self.Tx = []
-                for txdata in self.xtxParser.Tx:
-                    self.Tx.append(txdata)
-                #self.xtxViewState = xtxParser.userViewState
-                self.showTxdata()
+#            if self.xtxParser.xtxError != '' :
+#                QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
+#            else:
+#                QMessageBox.critical(self,'成功', 'yes')
+#                self.Tx = []
+#                for txdata in self.xtxParser.Tx:
+#                    self.Tx.append(txdata)
+#                #self.xtxViewState = xtxParser.userViewState
+#                self.showTxdata()
                 
-            
-    @pyqtSlot()
-    def on_startSkPushButton_clicked(self):
+    @pyqtSlot(str)
+    def on_kcgsComboBox_activated(self, p0):
+        """
+        Slot documentation goes here.
+        """     
+        if not self.xtxParser.currentKcgs == p0:
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'ddl_kcxz'
+            self.xtxParser.currentKcgs= p0
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 90):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (30)
+    
+    @pyqtSlot(str)
+    def on_sksjComboBox_activated(self, p0):
         """
         Slot documentation goes here.
         """
-        pass
+        if not self.xtxParser.currentSksj == p0:
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'ddl_sksj'
+            self.xtxParser.currentSksj= p0
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 90):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (30)
+    
+    @pyqtSlot(str)
+    def on_ywylComboBox_activated(self, p0):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentYwyl == p0:
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'ddl_ywyl'
+            self.xtxParser.currentYwyl = p0
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 90):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (30)
+    
+    @pyqtSlot(int)
+    def on_tComboBox_activated(self, index):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentMyxs == index:
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'dpkcmcGrid:txtPageSize'
+            self.xtxParser.currentPage = 1
+            self.xtxParser.currentMyxs = self.tComboBox.itemText(index)
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 90):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (30)
+
+    
+    @pyqtSlot(int)
+    def on_yComboBox_activated (self, index):
+        """
+        Slot documentation goes here.
+        """
+        if not self.xtxParser.currentPage == index:
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(index)
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 95):
+                if self.xtxProgressBar.value == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (20)
+    
+    @pyqtSlot()
+    def on_xtxSyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.yComboBox.currentIndex()>0:
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(0)
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 95):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (20)
+    
+    @pyqtSlot()
+    def on_xtxSyyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if self.yComboBox.currentIndex()>0:
+            self.on_stopSkPushButton_clicked() 
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(self.yComboBox.currentIndex()-1)
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 95):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (20)
+    
+    @pyqtSlot()
+    def on_xtxXyyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if (self.yComboBox.currentIndex()+1) < int(self.xtxParser.totalPage):
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(self.yComboBox.currentIndex()+1)
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 95):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (20)
+    
+    @pyqtSlot()
+    def on_xtxMyPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        if (self.yComboBox.currentIndex()+1) < int(self.xtxParser.totalPage):
+            self.on_stopSkPushButton_clicked()
+            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
+            self.xtxParser.currentPage = self.yComboBox.itemText(int(self.xtxParser.totalPage)-1)
+            self.xtxThread.setThread(self.loadXtxdata, (), self.loadXtxdata.__name__)
+            self.xtxThread.start()
+            self.xtxProgressBar.setVisible(True)
+            self.xtxProgressBar.setValue(10)
+            for i in range(24, 95):
+                if self.xtxProgressBar.value() == 100:
+                    break
+                self.xtxProgressBar.setValue(i)
+                QThread.msleep (20)
+            
+    @pyqtSlot()
+    def on_startSkPushButton_clicked(self):
+        self.xtxThread.setThread(self.shuake, (), self.shuake.__name__, 3)
+        self.xtxThread.start()
+        self.xtxProgressBar.setVisible(True)
+        self.xtxProgressBar.setValue(10)
+        for i in range(24, 90):
+            if self.xtxProgressBar.value() == 100:
+                break
+            self.xtxProgressBar.setValue(i)
+            QThread.msleep (30)
+            
+    def shuake(self):
+        """
+        Slot documentation goes here.
+        """
+        ssBody = {'__EVENTTARGET':'', 
+                       '__EVENTARGUMENT':'', 
+                       '__VIEWSTATE':self.xtxParser.userViewState, 
+                       'ddl_kcxz':'', 
+                       'ddl_ywyl':'', 
+                       'ddl_kcgs':'', 
+                       'ddl_xqbs':self.xtxParser.xqbs, 
+                       'ddl_sksj':'', 
+                       'TextBox1':self.kcmcLineEdit.text().encode('gb2312'), 
+                       'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+                       'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+                       'Button1': 'ȷ��'}
+        ssBody = urllib.parse.urlencode(query = ssBody)
+        ssBody = ssBody.encode('ISO-8859-1')
+        ssHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Content-Length':len(ssBody),
+                           'Cache-Control':'max-age=0',
+                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                           'Origin':'http://jw2005.scuteo.com',
+                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                           'Content-Type':'application/x-www-form-urlencoded',
+                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
+                           'Accept-Encoding':'gzip,deflate,sdch',
+                           'Accept-Language':'zh-CN,zh;q=0.8',
+                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                           'Cookie':self.userCookie}
+        ssReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = ssBody, headers = ssHeaders)
+        try :
+            ssData = urllib.request.urlopen(url = ssReq)
+        except urllib.error.HTTPError as e:
+            self.loginError = e.getcode()
+            print(self.loginError)
+        else:
+            self.xtxParser = XtxParser()
+            self.xtxParser.feed(ssData.read().decode('gb2312'))
+
+
+    def shuake2(self):
+        item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
+        self.eventTagrget = ''
+        plBody = {'__EVENTTARGET':self.eventTagrget, 
+                       '__EVENTARGUMENT':'', 
+                       '__VIEWSTATE':self.xtxParser.userViewState, 
+                       'ddl_kcxz':'', 
+                       'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+                       'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+                       'ddl_xqbs':self.xtxParser.xqbs, 
+                       'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+                       'TextBox1':self.kcmcLineEdit.text().encode('gb2312'), 
+                        item.text():'on', 
+                       'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+                       'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+                       'Button1': '  �ύ  '}
+        plBody = urllib.parse.urlencode(query = plBody)
+        plBody = plBody.encode('ISO-8859-1')
+        plHeaders = {'Host':'jw2005.scuteo.com',
+                           'Connection':'keep-alive',
+                           'Content-Length':len(plBody),
+                       'Cache-Control':'max-age=0',
+                       'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                       'Origin':'http://jw2005.scuteo.com',
+                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                       'Content-Type':'application/x-www-form-urlencoded',
+                       'Referer':self.mainUrl+self.menuPath.xgxkxk,
+                       'Accept-Encoding':'gzip,deflate,sdch',
+                       'Accept-Language':'zh-CN,zh;q=0.8',
+                       'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                       'Cookie':self.userCookie}
+        plReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = plBody, headers = plHeaders)
+        try :
+            plData = urllib.request.urlopen(url = plReq, timeout = 6)
+        except urllib.error.HTTPError as e:
+            self.loginError = e.getcode()
+            print(self.loginError)
+        else:
+            self.xtxParser = XtxParser()
+            self.xtxParser.feed(plData.read().decode('gb2312'))
+            if self.xtxParser.xtxError == '':
+                self.xtxTimer.stop()
         
     @pyqtSlot()
     def on_minToolButton_clicked(self):
@@ -879,6 +1244,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.logout()
         self.close()
     
+    @pyqtSlot()
     def loginAgain(self):
         self.t1.quit()
         self.t1.start()
@@ -895,7 +1261,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                            'Cookie':self.userCookie}
         cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,headers = cjHeaders)
-        cjData = urllib.request.urlopen(url = cjReq, timeout = 5)
+        cjData = urllib.request.urlopen(url = cjReq)
         self.progressUpdated.emit(45)
         cjParser = CjParser()
         cjParser.feed(cjData.read().decode('gb2312'))
@@ -919,7 +1285,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                            'Cookie':self.userCookie}
         cjReq = urllib.request.Request(url =self.mainUrl+self.menuPath.cjcx,data = cjBody,headers = cjHeaders)
         self.progressUpdated.emit(75)
-        cjData = urllib.request.urlopen(url = cjReq, timeout = 5)
+        cjData = urllib.request.urlopen(url = cjReq, timeout = 7)
         self.progressUpdated.emit(90)
         cjParser.feed(cjData.read().decode('gb2312'))
         self.progressUpdated.emit(99)
@@ -982,7 +1348,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         finally:
             self.cjTabelView.setModel(self.cjTable)
             self.cjTabelView.resizeColumnsToContents ()
-            #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            self.cjTable.setVerticalHeaderLabels(['1      '])
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
         
     def showCjdata2(self):
@@ -1022,6 +1388,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cjTabelView.setModel(self.cjTable)
             self.cjTabelView.resizeColumnsToContents ()
             #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            self.cjTable.setVerticalHeaderLabels(['1      '])
             self.userGPALabel.setText('以上科目的平均Gpa为    :'+str(self.Gpa)+'                    以上科目的智育成绩 为     :'+str(self.Zhiy))
     
     def cjTransfer(self,s):
@@ -1139,8 +1506,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.wapTableView.setModel(self.wapTable)
         self.wapTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         #self.wapTableView.resizeRowsToContents()
-        self.loadKbdataFlag = 1
         self.kbImformationLabel.setText('本学期     '+self.userXm +'   的个人课表')
+        self.loadKbdataFlag = 1
         
     def loadYxkcdata(self):
         self.progressUpdated.emit(20)
@@ -1179,9 +1546,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
                     brush.setStyle(Qt.SolidPattern)
                     item.setBackground(brush)
-#                brush = QBrush(QColor(255, 255, 255))
-#                brush.setStyle(Qt.SolidPattern)
-#                item.setForeground(brush)
                 item.setTextAlignment(Qt.AlignCenter)
                 if j == 0:
                     self.yxkcTable.setItem(i,8,item)
@@ -1193,155 +1557,103 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i +=1
         self.yxkcTableView.setModel(self.yxkcTable)
         self.yxkcTableView.resizeColumnsToContents ()
-        #self.yxkcTableView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         self.yxkcTableView.resizeRowsToContents()
+        self.yxkcTable.setVerticalHeaderLabels(['1      '])
         
     def loadXtxdata(self):
-#        xtxHeaders = {'Host':'jw2005.scuteo.com',
-#                           'Connection':'keep-alive',
-#                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
-#                           'Referer':self.mainUrl+self.mainPath,
-#                           'Accept-Encoding':'gzip,deflate,sdch',
-#                           'Accept-Language':'zh-CN,zh;q=0.8',
-#                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
-#                           'Cookie':self.userCookie}
-#                           
-#        xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
-#        try :
-#            xtxData = urllib.request.urlopen(url = xtxReq)
-#        except urllib.error.HTTPError as e:
-#            self.loginError = e.getcode()
-#            print(self.loginError)
-#        else:
-#            xtxParser = XtxParser()
-#            xtxParser.feed(xtxData.read().decode('gb2312'))
-#            userViewState = xtxParser.userViewState
-#            self.pageSize = xtxParser.pageSize
-#            self.xqbs = xtxParser.xqbs
-#            self.sksjComboBox.addItems(xtxParser.sksj)
-#            self.kcgsComboBox.addItems(xtxParser.kcgs)
-#            self.ywylComboBox.addItems(xtxParser.ywyl)
-#            self.sksjComboBox.setCurrentIndex(self.sksjComboBox.findText(xtxParser.currentSksj))
-#            self.kcgsComboBox.setCurrentIndex(self.kcgsComboBox.findText(xtxParser.currentKcgs))
-#            self.ywylComboBox.setCurrentIndex(self.ywylComboBox.findText(xtxParser.currentYwyl))
-#            del xtxParser.Tx[:]
+        if self.loadXtxdataFlag == 1:
+            xtxBody = {'__EVENTTARGET':self.eventTagrget, 
+            '__EVENTARGUMENT':'', 
+            '__VIEWSTATE':self.xtxParser.userViewState, 
+            'ddl_kcxz':'', 
+            'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+            'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+            'ddl_xqbs':self.xtxParser.xqbs, 
+            'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+            'TextBox1':'', 
+            'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+            'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+            'dpDataGrid2:AtxtChoosePage':'1', 
+            'dpDataGrid2:AtxtPageSize':'150'}
             
-            if self.loadXtxdataFlag == 1:
-                #xtxBody = '__EVENTTARGET='+self.eventTagrget+'&__EVENTARGUMENT=&__VIEWSTATE='+self.xtxViewState+'&ddl_kcxz=&ddl_ywyl='+urllib.parse.quote(self.ywylComboBox.currentText().encode('gb2312'))+'&ddl_kcgs=&ddl_xqbs='+self.xqbs +'&ddl_sksj=&TextBox1=&dpkcmcGrid%3AtxtChoosePage='+self.yComboBox.currentText()+'&dpkcmcGrid%3AtxtPageSize='+self.tComboBox.currentText()
-#                xtxBody = {'__EVENTTARGET':self.eventTagrget, 
-#                                '__EVENTARGUMENT':'', 
-#                                '__VIEWSTATE':self.xtxParser.userViewState, 
-#                                'ddl_kcxz':'', 
-#                                'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
-#                                'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
-#                                'ddl_xqbs':self.xtxParser.xqbs, 
-#                                'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
-#                                'TextBox1':'', 
-#                                'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
-#                                'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs}
-                xtxBody = {'__EVENTTARGET':self.eventTagrget, 
-                '__EVENTARGUMENT':'', 
-                '__VIEWSTATE':self.xtxParser.userViewState, 
-                'ddl_kcxz':'', 
-                'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
-                'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
-                'ddl_xqbs':self.xtxParser.xqbs, 
-                'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
-                'TextBox1':'', 
-                'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
-                'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
-                'dpDataGrid2:AtxtChoosePage':'1', 
-                'dpDataGrid2:AtxtPageSize':'150'}
-                
-                xtxBody = urllib.parse.urlencode(query = xtxBody)
-                xtxBody = xtxBody.encode('ISO-8859-1')
-                xtxHeaders = {'Host':'jw2005.scuteo.com',
-                           'Connection':'keep-alive',
-                           'Content-Length':len(xtxBody),
-                           'Cache-Control':'max-age=0',
-                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                           'Origin':'http://jw2005.scuteo.com',
-                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
-                           'Content-Type':'application/x-www-form-urlencoded',
-                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
-                           'Accept-Encoding':'gzip,deflate,sdch',
-                           'Accept-Language':'zh-CN,zh;q=0.8',
-                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
-                           'Cookie':self.userCookie}
-                xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = xtxBody,headers = xtxHeaders)
-            else:
-                xtxHeaders = {'Host':'jw2005.scuteo.com',
-                           'Connection':'keep-alive',
-                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
-                           'Referer':self.mainUrl+self.mainPath,
-                           'Accept-Encoding':'gzip,deflate,sdch',
-                           'Accept-Language':'zh-CN,zh;q=0.8',
-                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
-                           'Cookie':self.userCookie}
-                xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
-            try :
-                xtxData = urllib.request.urlopen(url = xtxReq)
-            except urllib.error.HTTPError as e:
-                self.loginError = e.getcode()
-                print(self.loginError)
-            else:
-                self.xtxParser = XtxParser()
-                self.xtxParser.feed(xtxData.read().decode('gb2312'))
+            xtxBody = urllib.parse.urlencode(query = xtxBody)
+            xtxBody = xtxBody.encode('ISO-8859-1')
+            xtxHeaders = {'Host':'jw2005.scuteo.com',
+                       'Connection':'keep-alive',
+                       'Content-Length':len(xtxBody),
+                       'Cache-Control':'max-age=0',
+                       'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                       'Origin':'http://jw2005.scuteo.com',
+                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                       'Content-Type':'application/x-www-form-urlencoded',
+                       'Referer':self.mainUrl+self.menuPath.xgxkxk,
+                       'Accept-Encoding':'gzip,deflate,sdch',
+                       'Accept-Language':'zh-CN,zh;q=0.8',
+                       'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                       'Cookie':self.userCookie}
+            xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = xtxBody,headers = xtxHeaders)
+        else:
+            xtxHeaders = {'Host':'jw2005.scuteo.com',
+                       'Connection':'keep-alive',
+                       'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+                       'Referer':self.mainUrl+self.mainPath,
+                       'Accept-Encoding':'gzip,deflate,sdch',
+                       'Accept-Language':'zh-CN,zh;q=0.8',
+                       'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+                       'Cookie':self.userCookie}
+            xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
+        try :
+            xtxData = urllib.request.urlopen(url = xtxReq)
+        except urllib.error.HTTPError as e:
+            self.loginError = e.getcode()
+            print(self.loginError)
+        else:
+            self.xtxParser = XtxParser()
+            self.xtxParser.feed(xtxData.read().decode('gb2312'))
+            
+            self.sksjComboBox.clear()
+            self.kcgsComboBox.clear()
+            self.ywylComboBox.clear()
+            self.yComboBox.clear()
+            self.tComboBox.clear()
 
-#                self.xtxViewState = xtxParser.userViewState
-#                self.pageSize = xtxParser.pageSize
-#                self.xqbs = xtxParser.xqbs
-#                self.currentMyxs = xtxParser.currentMyxs
-#                self.currentPage = int(xtxParser.currentPage)-1
-#                self.currentKcgs = xtxParser.currentKcgs
-#                self.currentSksj = xtxParser.currentSksj
+            self.sksjComboBox.addItems(self.xtxParser.sksj)
+            self.kcgsComboBox.addItems(self.xtxParser.kcgs)
+            self.ywylComboBox.addItems(self.xtxParser.ywyl)
+            self.sksjComboBox.setCurrentIndex(self.sksjComboBox.findText(self.xtxParser.currentSksj))
+            self.kcgsComboBox.setCurrentIndex(self.kcgsComboBox.findText(self.xtxParser.currentKcgs))
+            self.ywylComboBox.setCurrentIndex(self.ywylComboBox.findText(self.xtxParser.currentYwyl))
+            
+            if self.xtxParser.totalPage:
+                yData = [str(i) for i in range(1, int(self.xtxParser.totalPage)+1)]
+                self.yComboBox.addItems(yData)
+                self.yComboBox.setCurrentIndex(int(self.xtxParser.currentPage)-1)
+            else:
+                self.yComboBox.addItem('')
+                self.xtxParser.totalPage = ''
+                self.xtxParser.pageSize = ''
+                self.xtxParser.currentPage = ''
+            
+            if self.xtxParser.currentMyxs:
+                tData = [str(5),self.xtxParser.currentMyxs, str(int(self.xtxParser.pageSize)//2), self.xtxParser.pageSize]
+                self.tComboBox.addItems(tData)
+                self.tComboBox.setCurrentIndex(self.tComboBox.findText(self.xtxParser.currentMyxs))
+            else:
+                self.tComboBox.addItems('')
+                self.xtxParser.currentMyxs = ''
+                self.xtxParser.pageSize = ''
+                self.xtxParser.currentPage = ''
                 
-                self.sksjComboBox.clear()
-                self.kcgsComboBox.clear()
-                self.ywylComboBox.clear()
-                self.yComboBox.clear()
-                self.tComboBox.clear()
-
-                
-                
-                self.sksjComboBox.addItems(self.xtxParser.sksj)
-                self.kcgsComboBox.addItems(self.xtxParser.kcgs)
-                self.ywylComboBox.addItems(self.xtxParser.ywyl)
-                self.sksjComboBox.setCurrentIndex(self.sksjComboBox.findText(self.xtxParser.currentSksj))
-                self.kcgsComboBox.setCurrentIndex(self.kcgsComboBox.findText(self.xtxParser.currentKcgs))
-                self.ywylComboBox.setCurrentIndex(self.ywylComboBox.findText(self.xtxParser.currentYwyl))
-                
-                if self.xtxParser.totalPage:
-                    yData = [str(i) for i in range(1, int(self.xtxParser.totalPage)+1)]
-                    self.yComboBox.addItems(yData)
-                    self.yComboBox.setCurrentIndex(int(self.xtxParser.currentPage)-1)
-                else:
-                    self.yComboBox.addItem('')
-                    self.xtxParser.totalPage = ''
-                    self.xtxParser.pageSize = ''
-                    self.xtxParser.currentPage = ''
-                
-                if self.xtxParser.currentMyxs:
-                    tData = [str(5),self.xtxParser.currentMyxs, str(int(self.xtxParser.pageSize)//2), self.xtxParser.pageSize]
-                    self.tComboBox.addItems(tData)
-                    self.tComboBox.setCurrentIndex(self.tComboBox.findText(self.xtxParser.currentMyxs))
-                else:
-                    self.tComboBox.addItems('')
-                    self.xtxParser.currentMyxs = ''
-                    self.xtxParser.pageSize = ''
-                    self.xtxParser.currentPage = ''
-                    
-                self.xtxImformationLabel.setText('总共有'+str(self.xtxParser.pageSize)+'条')
-                
-                self.Xtx = []
-                self.Tx = []
-                for xtxdata in self.xtxParser.Xtx:
-                    self.Xtx.append(xtxdata)
-                for txdata in self.xtxParser.Tx:
-                    self.Tx.append(txdata)
-                self.loadXtxdataFlag = 1
+            self.xtxImformationLabel.setText('总共有'+str(self.xtxParser.pageSize)+'条')
+            
+            self.Xtx = []
+            self.Tx = []
+            for xtxdata in self.xtxParser.Xtx:
+                self.Xtx.append(xtxdata)
+            for txdata in self.xtxParser.Tx:
+                self.Tx.append(txdata)
+            self.loadXtxdataFlag = 1
                 
     
     def showXtxdata(self):
@@ -1361,25 +1673,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
                     brush.setStyle(Qt.SolidPattern)
                     item.setBackground(brush)
-#                brush = QBrush(QColor(255, 255, 255))
-#                brush.setStyle(Qt.SolidPattern)
-#                item.setForeground(brush)
                 item.setTextAlignment(Qt.AlignCenter)
                 self.xtxTable.setItem(i,j,item)
                 j +=1
             i +=1
         self.xtxTableView.setModel(self.xtxTable)
         for j in range(0, i):
-            pickButton = QPushButton('选这门课')
+            pickButton = QPushButton('刷这门课')
             pickButton.setAutoFillBackground(False)
             pickButton.setFixedSize(60, 30)
             pickButton.setEnabled(False)
             index = self.xtxTable.index(j, 0)
             self.xtxTableView.setIndexWidget(index, pickButton)
-            pickButton.clicked.connect(self.pickThisLesson, Qt.QueuedConnection)
+            pickButton.clicked.connect(self.shua, Qt.QueuedConnection)
         self.xtxTableView.resizeColumnsToContents ()
-        #self.xtxTableView.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
-        self.xtxTableView.resizeRowsToContents()
+        self.xtxTable.setVerticalHeaderLabels(['1     '])
         self.showTxdata()
 
     def showTxdata(self):
@@ -1399,9 +1707,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
                     brush.setStyle(Qt.SolidPattern)
                     item.setBackground(brush)
-#                brush = QBrush(QColor(255, 255, 255))
-#                brush.setStyle(Qt.SolidPattern)
-#                item.setForeground(brush)
                 item.setTextAlignment(Qt.AlignCenter)
                 self.txTable.setItem(i,j,item)
                 j +=1
@@ -1419,6 +1724,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.txTableView.resizeColumnsToContents ()
         #self.xtxTableView.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
         self.txTableView.resizeRowsToContents()
+        self.txTable.setVerticalHeaderLabels(['1      '])
     
 
                 
@@ -1455,161 +1761,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def mouseMoveEvent(self, e):
         self.move(e.globalPos() - self.clickPos)
-
-#    def showXtxdata2(self):
-#        kcgs = self.kcgsComboBox.currentText()
-#        sksj = self.sksjComboBox.currentText()
-#        ywyl = self.ywylComboBox.currentText()
-#        for i in range(0,self.xtxTable.rowCount()):
-#            self.xtxTable.removeRow(0)
-#        i = 0
-#        for xtxdata in self.Xtx:
-#            kcgsflag = 0
-#            sksjflag = 0
-#            ywylflag = 0
-#            if  xtxdata[11] == kcgs or kcgs == '':
-#                kcgsflag = 1
-#            if xtxdata[4] == sksj or sksj == '': 
-#                sksjflag = 1
-#            if ywyl == '有':
-#                if int(xtxdata[10])>0:
-#                    ywylflag = 1
-#            elif ywyl == '无':
-#                if int(xtxdata[10])<=0:
-#                    ywylflag = 1
-#            elif ywyl =='':
-#                ywylflag = 1        
-#            if kcgsflag == 1 and sksjflag == 1 and ywylflag == 1:
-#                j = 0
-#                self.xtxTable.insertRow(i)
-#                for data in xtxdata:
-#                    font = QFont()
-#                    font.setFamily("微软雅黑")
-#                    font.setPointSize(12)
-#                    item = QStandardItem(data)
-#                    item.setFont(font)
-#                    if  i%2 ==1:
-#                        brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
-#                        brush.setStyle(Qt.SolidPattern)
-#                        item.setBackground(brush)
-#                    self.xtxTable.setItem(i,j,item)
-#                    j = j + 1
-#                i =i + 1
-#        self.xtxTableView.setModel(self.xtxTable)
-#        self.xtxTableView.resizeColumnsToContents ()
-#        #self.cjTabelView.horizontalHeader().setResizeMode(QHeaderView.Stretch)
-#        for j in range(0, i):
-#            pickButton = QPushButton('选这门课')
-#            pickButton.setAutoFillBackground(False)
-#            pickButton.setFixedSize(60, 30)
-#            pickButton.setEnabled(False)
-#            index = self.xtxTable.index(j, 0)
-#            self.xtxTableView.setIndexWidget(index, pickButton)
-#            pickButton.clicked.connect(self.pickThisLesson, Qt.QueuedConnection)
-            
-    @pyqtSlot(str)
-    def on_kcgsComboBox_activated(self, p0):
-        """
-        Slot documentation goes here.
-        """
-        if not self.xtxParser.currentKcgs == p0:
-            self.eventTagrget = 'ddl_kcxz'
-            self.xtxParser.currentKcgs= p0
-            self.loadXtxdata()
-            self.showXtxdata()
-    
-    @pyqtSlot(str)
-    def on_sksjComboBox_activated(self, p0):
-        """
-        Slot documentation goes here.
-        """
-        if not self.xtxParser.currentSksj == p0:
-            self.eventTagrget = 'ddl_sksj'
-            self.xtxParser.currentSksj= p0
-            self.loadXtxdata()
-            self.showXtxdata()
-    
-    @pyqtSlot(str)
-    def on_ywylComboBox_activated(self, p0):
-        """
-        Slot documentation goes here.
-        """
-        if not self.xtxParser.currentYwyl == p0:
-            self.eventTagrget = 'ddl_ywyl'
-            self.xtxParser.currentYwyl = p0
-            self.loadXtxdata()
-            self.showXtxdata()
-    
-    @pyqtSlot(int)
-    def on_tComboBox_activated(self, index):
-        """
-        Slot documentation goes here.
-        """
-        if not self.xtxParser.currentMyxs == index:
-            self.eventTagrget = 'dpkcmcGrid:txtPageSize'
-            self.xtxParser.currentPage = 1
-            self.xtxParser.currentMyxs = self.tComboBox.itemText(index)
-            self.loadXtxdata()
-            self.showXtxdata()
-
-    
-    @pyqtSlot(int)
-    def on_yComboBox_activated (self, index):
-        """
-        Slot documentation goes here.
-        """
-        if not self.xtxParser.currentPage == index:
-            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
-            self.xtxParser.currentPage = self.yComboBox.itemText(index)
-            self.loadXtxdata()
-            self.showXtxdata()
     
     @pyqtSlot()
-    def on_xtxSyPushButton_clicked(self):
+    def on_stopSkPushButton_clicked(self):
         """
         Slot documentation goes here.
         """
-        if self.yComboBox.currentIndex()>0:         
-            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
-            self.xtxParser.currentPage = self.yComboBox.itemText(0)
-            self.loadXtxdata()
-            self.showXtxdata()
-    
-    @pyqtSlot()
-    def on_xtxSyyPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        if self.yComboBox.currentIndex()>0: 
-            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
-            self.xtxParser.currentPage = self.yComboBox.itemText(self.yComboBox.currentIndex()-1)
-            self.loadXtxdata()
-            self.showXtxdata()
-    
-    @pyqtSlot()
-    def on_xtxXyyPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        if (self.yComboBox.currentIndex()+1) < int(self.xtxParser.totalPage):
-            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
-            self.xtxParser.currentPage = self.yComboBox.itemText(self.yComboBox.currentIndex()+1)
-            self.loadXtxdata()
-            self.showXtxdata()
-    
-    @pyqtSlot()
-    def on_xtxMyPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        if (self.yComboBox.currentIndex()+1) < int(self.xtxParser.totalPage):
-            self.eventTagrget = 'dpkcmcGrid:txtChoosePage'
-            self.xtxParser.currentPage = self.yComboBox.itemText(int(self.xtxParser.totalPage)-1)
-            self.loadXtxdata()
-            self.showXtxdata()
+        self.xtxTimer.stop()
+        self.shuaLabel.setText('')
+        self.kcmcLineEdit.setEnabled(True)
+        self.startSkPushButton.setEnabled(True)
 
-
-    
 
         
 def main():

@@ -171,8 +171,8 @@ class loginDialog(QDialog, Ui_loginDialog):
     @pyqtSlot()
     def initialFinished(self):
         #zxcvbnm,./self.checkCodeImageLabel.setPixmap(QPixmap("src/checkCode.gif"))
-        self.userName = '201130630338'
-        self.userCode = '230059'
+        #self.userName = '201130630338'
+        #self.userCode = '230059'
         self.timer.stop()
         self.loginTimes = 1
         self.label.setText('Loading.第'+str(self.loginTimes)+'次')
@@ -202,8 +202,8 @@ class loginDialog(QDialog, Ui_loginDialog):
         """
         Slot documentation goes here.
         """
-        #self.userName = self.userNameLineEdit.text()
-        #self.userCode = self.userCodeLineEdit.text()
+        self.userName = self.userNameLineEdit.text()
+        self.userCode = self.userCodeLineEdit.text()
         #self.checkCode = self.checkCodeLineEdit.text()
         
         if len(self.userName) != 12:

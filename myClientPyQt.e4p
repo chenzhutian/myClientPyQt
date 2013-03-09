@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
 <!-- eric5 project file for project myClientPyQt -->
-<!-- Saved: 2013-03-05, 18:52:18 -->
+<!-- Saved: 2013-03-09, 01:27:15 -->
 <!-- Copyright (C) 2013 unhealthy, chenzhutian1992@gmail.com -->
 <Project version="5.1">
   <Language></Language>
@@ -24,6 +24,7 @@
   <Forms>
     <Form>LoginWidgetQt.ui</Form>
     <Form>BrowerserWidgetMainPageQt.ui</Form>
+    <Form>test.ui</Form>
   </Forms>
   <Translations/>
   <Resources/>
