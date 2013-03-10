@@ -5,7 +5,7 @@ Module implementing MainWindow.
 """
 
 from PyQt4.QtCore import pyqtSlot, Qt, QThread, pyqtSignal, QTimer, QFile, QModelIndex
-from PyQt4.QtGui import QMainWindow, QApplication, QStandardItemModel, QStandardItem , QHeaderView, QFont, QBrush, QColor, QStyleFactory, QIcon,QStyle, QPushButton, QMessageBox, qApp
+from PyQt4.QtGui import QMainWindow, QDesktopWidget, QApplication, QStandardItemModel, QStandardItem , QHeaderView, QFont, QBrush, QColor, QStyleFactory, QIcon,QStyle, QPushButton, QMessageBox, qApp
 from  Ui_BrowerserWidgetMainPageQt import Ui_MainWindow
 import MenuPath
 import urllib.request
@@ -64,12 +64,13 @@ class CjParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.getData = False
-        self.getDatelData1 = 0
-        self.tdIter = -1
+        self.tdIter = 0
+        self.trIter = 0
         self.userViewState = ''
         self.tagflag = {'span':False,
                         'td':False,
                         'tr':False,
+                        'table':False, 
                         'input':False}
         self.dataflag = {'span id="lbl_xy"':False,
                          'span id="lbl_zy"':False,
@@ -105,13 +106,15 @@ class CjParser(HTMLParser):
                             self.dataflag['span id="lbl_xzb"']=True
             elif tag == 'table':
                 for name,value in attrs:
-                    if name == 'class':
-                        if value == 'datelist':
-                            self.getDatelData1 = 1
+                    if name == 'class' and value == 'datelist':
+                            self.tagflag['table'] = True
+                            self.trIter = 0
+                            break
             elif tag == 'tr':
-                if self.getDatelData1 == 2:
+                if self.tagflag['table']:
                     self.tagflag['tr'] = True
-                    self.tdIter = -1
+                    self.trIter +=1
+                    self.tdIter = 0
             elif tag == 'td':
                 if self.tagflag['tr']:
                     self.tagflag['td'] = True
@@ -126,22 +129,18 @@ class CjParser(HTMLParser):
     def handle_endtag(self,tag):
         if tag == 'span':
             self.tagflag['span'] = False
-            for key in self.dataflag:
-                if 'span' in key:
-                    self.dataflag[key] = False
+            self.dataflag['span id="lbl_xy"'] = False
+            self.dataflag['span id="lbl_zy"'] = False
+            self.dataflag['span id="lbl_zyfx"'] = False
+            self.dataflag['span id="lbl_xzb:'] = False 
+            self.dataflag['span id="lbl_zymc"'] = False
         elif tag == 'table':
-            if self.getDatelData1 == 2:
-                self.getDatelData1 = 0
+            self.tagflag['table'] = False
         elif tag == 'tr':
-            self.tagflag['tr'] = False
-            if self.getDatelData1 == 1:
-                self.getDatelData1 = 2
-            elif self.getDatelData1 == 2:
+            if self.trIter>1 and self.tagflag['tr']:
                 self.Cj.append(self.cjData)
-                self.cjData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
-            for key in self.dataflag:
-                if 'tr' in key:
-                    self.dataflag[key] = False
+            self.cjData = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
+            self.tagflag['tr'] = False
         elif tag == 'td':
             self.tagflag['td'] = False
             
@@ -158,7 +157,7 @@ class CjParser(HTMLParser):
             elif self.dataflag['span id="lbl_xzb"']:
                 self.xzb = data
         elif self.tagflag['td']:
-                self.cjData[self.tdIter] = data
+                self.cjData[self.tdIter - 1] = data
 
     def handle_comment(self,data):
         if data == ' 查询得到的数据量显示区域 ':
@@ -375,6 +374,7 @@ class XtxParser(HTMLParser):
         self.totalPage = 0
         self.pageSize = 0
         self.currentMyxs = 0
+        self.currentTextBox1 = ''
         
     def handle_starttag(self,tag,attrs):
         if tag == 'table':
@@ -420,10 +420,13 @@ class XtxParser(HTMLParser):
                 for name,value in attrs:
                     if name == 'name' and value == 'dpkcmcGrid:txtPageSize':
                         self.currentMyxs = attrs[2][1]
-                    if name == 'name' and value == '__VIEWSTATE':
+                    elif name == 'name' and value == '__VIEWSTATE':
                         self.userViewState = attrs[2][1]
                         #self.userViewState = urllib.parse.quote(self.userViewState, safe = '')
                         break
+                    elif name == 'name' and value == "TextBox1":
+                       if attrs[2][0] == 'value':
+                           self.currentTextBox1 = attrs[2][1]
         elif tag == 'span':
             for name, value in attrs:
                 if name == 'id' and value == 'dpkcmcGrid_lblTotalRecords':
@@ -546,7 +549,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     shuakeFlag = 0
     maxNormal = False
     progressUpdated=pyqtSignal(int)
-    shuaSignal = pyqtSignal()
+#    shuaSignal = pyqtSignal()
     
     def __init__(self, parent=None, loginW = None):
         """
@@ -609,8 +612,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.maxToolButton.setIcon(self.maxPix)
         self.restorePix = QIcon(self.style().standardPixmap(QStyle.SP_TitleBarNormalButton))
         self.xtxProgressBar.setVisible(False)
-        
-        
+
         
         self.t1 = ProcessorThread()
         self.t1.finishLoading.connect(self.showPage,Qt.QueuedConnection)
@@ -623,7 +625,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.progressUpdated.connect(self.showProgressing,Qt.QueuedConnection)
         self.xtxTableView.verticalHeader().sectionClicked.connect(self.enableButton1, Qt.QueuedConnection)
         self.txTableView.verticalHeader().sectionClicked.connect(self.enableButton2, Qt.QueuedConnection)
-        self.shuaSignal.connect(self.shua, Qt.QueuedConnection)
+#        self.shuaSignal.connect(self.shua, Qt.QueuedConnection)
         self.setWindowFlags(Qt.FramelessWindowHint)
     
 
@@ -682,60 +684,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.Tx.append(txdata)
                 self.showTxdata()
                 self.xtxProgressBar.setVisible(False)
-        elif flag ==3:
+        elif flag == 3:
             if self.xtxParser.xtxError != '' :
                 QMessageBox.critical(self,'错误', self.xtxParser.xtxError)
             else:
                 self.Xtx = []
                 for xtxdata in self.xtxParser.Xtx:
                     self.Xtx.append(xtxdata)
-                for i in range(0,self.xtxTable.rowCount()):            
-                    self.xtxTable.removeRow(0)
-                i = 0
-                for xtxdata in self.Xtx:
-                    j = 0
-                    for data in xtxdata:
-                        font = QFont()
-                        font.setFamily("微软雅黑")
-                        font.setPointSize(12)
-                        item = QStandardItem(data)
-                        item.setFont(font)
-                        if  i%2 ==1:
-                            brush = QBrush(QColor(self.bgRGB.bgRGB[2]))
-                            brush.setStyle(Qt.SolidPattern)
-                            item.setBackground(brush)
-                        item.setTextAlignment(Qt.AlignCenter)
-                        self.xtxTable.setItem(i,j,item)
-                        j +=1
-                    i +=1
-                self.xtxTableView.setModel(self.xtxTable)
-                for j in range(0, i):
-                    pickButton = QPushButton('刷这门课')
-                    pickButton.setAutoFillBackground(False)
-                    pickButton.setFixedSize(60, 30)
-                    pickButton.setEnabled(False)
-                    index = self.xtxTable.index(j, 0)
-                    self.xtxTableView.setIndexWidget(index, pickButton)
-                    pickButton.clicked.connect(self.shua, Qt.QueuedConnection)
-                self.xtxTableView.resizeColumnsToContents ()
-                self.xtxTable.setVerticalHeaderLabels(['1     '])
+                self.showXtxdata()
                 self.xtxProgressBar.setVisible(False)
                 #self.shuaSignal.emit()
                 
-    @pyqtSlot()
-    def shua(self):
-        self.t = shuaThread(self.shuake2, ())
-        self.kcmcLineEdit.setEnabled(False)
-        self.startSkPushButton.setEnabled(False)
-        self.timeOfShua = 0
-        self.xtxTimer.start(4000)
-    
-    @pyqtSlot()
-    def shuaAgain(self):
-        self.t.quit()
-        self.timeOfShua += 1
-        self.shuaLabel.setText('第'+str(self.timeOfShua)+'遍刷课,'+'反馈信息:'+self.xtxParser.xtxError)
-        self.t.start()
+
         
     @pyqtSlot()
     def on_syToolButton_clicked(self):
@@ -1129,7 +1089,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
     @pyqtSlot()
     def on_startSkPushButton_clicked(self):
-        self.xtxThread.setThread(self.shuake, (), self.shuake.__name__, 3)
+        self.xtxThread.setThread(self.souSuo, (), self.souSuo.__name__, 3)
         self.xtxThread.start()
         self.xtxProgressBar.setVisible(True)
         self.xtxProgressBar.setValue(10)
@@ -1138,8 +1098,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 break
             self.xtxProgressBar.setValue(i)
             QThread.msleep (30)
-            
-    def shuake(self):
+
+    @pyqtSlot()
+    def on_stopSkPushButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        self.xtxTimer.stop()
+        self.shuaLabel.setText('')
+        self.xtxTableView.setEnabled(True)
+        self.kcmcLineEdit.setEnabled(True)
+        self.startSkPushButton.setEnabled(True)
+        
+    def souSuo(self):
         """
         Slot documentation goes here.
         """
@@ -1180,8 +1151,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.xtxParser = XtxParser()
             self.xtxParser.feed(ssData.read().decode('gb2312'))
 
+    @pyqtSlot()
+    def shua(self):
+        self.t = shuaThread(self.shuake, ())
+        self.kcmcLineEdit.setEnabled(False)
+        self.startSkPushButton.setEnabled(False)
+        self.timeOfShua = 0
+        self.xtxTimer.start(4000)
+    
+    @pyqtSlot()
+    def shuaAgain(self):
+        self.t.quit()
+        self.timeOfShua += 1
+        self.shuaLabel.setText('第'+str(self.timeOfShua)+'遍刷课,'+'反馈信息:'+self.xtxParser.xtxError)
+        self.t.start()
 
-    def shuake2(self):
+    def shuake(self):
+        self.xtxTableView.setEnabled(False)
         item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
         self.eventTagrget = ''
         plBody = {'__EVENTTARGET':self.eventTagrget, 
@@ -1192,7 +1178,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                        'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
                        'ddl_xqbs':self.xtxParser.xqbs, 
                        'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
-                       'TextBox1':self.kcmcLineEdit.text().encode('gb2312'), 
+                       'TextBox1':self.xtxParser.currentTextBox1.encode('gb2312'), 
                         item.text():'on', 
                        'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
                        'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
@@ -1222,7 +1208,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.xtxParser = XtxParser()
             self.xtxParser.feed(plData.read().decode('gb2312'))
             if self.xtxParser.xtxError == '':
-                self.xtxTimer.stop()
+                self.on_stopSkPushButton_clicked()
+                self.Tx = []
+                for txdata in self.xtxParser.Tx:
+                    self.Tx.append(txdata)
+                self.showTxdata()
+                self.txxkTabWidget.setCurrentIndex(1)
         
     @pyqtSlot()
     def on_minToolButton_clicked(self):
@@ -1230,18 +1221,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     
     @pyqtSlot()
     def on_maxToolButton_clicked(self):
-        if self.maxNormal :
-            self.showNormal()
-            self.maxNormal = not self.maxNormal
-            self.maxToolButton.setIcon(self.maxPix)
-        else:
-            self.showMaximized()
+        if not self.maxNormal:
+            #self.showMaximized()
+            max = QDesktopWidget()
+            self.resize(max.availableGeometry().size())
+            self.move(0, 0)
             self.maxNormal = not self.maxNormal
             self.maxToolButton.setIcon(self.restorePix)
+        else:
+            self.resize(1000, 589)
+            #self.showNormal()
+            self.move(200, 100)
+            self.maxNormal = not self.maxNormal
+            self.maxToolButton.setIcon(self.maxPix)
     
     @pyqtSlot()
     def on_closeToolButton_clicked(self):
-        self.logout()
+        #self.logout()
         self.close()
     
     @pyqtSlot()
@@ -1322,6 +1318,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 Xqflag = 1
             if Xnflag == 1 and Xqflag == 1:
                 if cjdata[4] == '必修课' or cjdata[4] == '选修课':
+                    if cjdata[6] == ' ':
+                        cjdata[6] = 0
+                    if cjdata[7] ==' ':
+                        cjdata[7] = 0
                     self.Point = self.Point+float(cjdata[6]) 
                     self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                     self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
@@ -1360,6 +1360,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i = 1
         for cjdata in self.Cj:
             if cjdata[4] == '必修课' or cjdata[4] == '选修课':
+                if cjdata[6] == ' ':
+                    cjdata[6] = 0
+                if cjdata[7] ==' ':
+                    cjdata[7] = 0
                 self.Point = self.Point+float(cjdata[6]) 
                 self.Gpa = self.Gpa+ float(cjdata[6])*float(cjdata[7])
                 self.Zhiy = self.Zhiy + float(cjdata[6])*self.cjTransfer(cjdata[8])*0.02
@@ -1562,6 +1566,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
     def loadXtxdata(self):
         if self.loadXtxdataFlag == 1:
+            self.progressUpdated.emit(35)
             xtxBody = {'__EVENTTARGET':self.eventTagrget, 
             '__EVENTARGUMENT':'', 
             '__VIEWSTATE':self.xtxParser.userViewState, 
@@ -1592,6 +1597,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                        'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                        'Cookie':self.userCookie}
             xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = xtxBody,headers = xtxHeaders)
+            
         else:
             xtxHeaders = {'Host':'jw2005.scuteo.com',
                        'Connection':'keep-alive',
@@ -1605,12 +1611,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             xtxReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,headers = xtxHeaders)
         try :
             xtxData = urllib.request.urlopen(url = xtxReq)
+            self.progressUpdated.emit(65)
         except urllib.error.HTTPError as e:
             self.loginError = e.getcode()
             print(self.loginError)
         else:
             self.xtxParser = XtxParser()
             self.xtxParser.feed(xtxData.read().decode('gb2312'))
+            self.progressUpdated.emit(85)
             
             self.sksjComboBox.clear()
             self.kcgsComboBox.clear()
@@ -1646,6 +1654,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.xtxParser.currentPage = ''
                 
             self.xtxImformationLabel.setText('总共有'+str(self.xtxParser.pageSize)+'条')
+            self.progressUpdated.emit(95)
             
             self.Xtx = []
             self.Tx = []
@@ -1751,26 +1760,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def mouseDoubleClickEvent(self, e):
         if (e.button() == Qt.LeftButton and e.y() <= self.height()):
             if not self.maxNormal:
-                self.showMaximized()
+                #self.showMaximized()
+                max = QDesktopWidget()
+                self.resize(max.availableGeometry().size())
+                self.move(0, 0)
                 self.maxNormal = not self.maxNormal
                 self.maxToolButton.setIcon(self.restorePix)
             else:
-                self.showNormal()
+                self.resize(1000, 589)
+                #self.showNormal()
+                self.move(200, 100)
                 self.maxNormal = not self.maxNormal
                 self.maxToolButton.setIcon(self.maxPix)
 
     def mouseMoveEvent(self, e):
         self.move(e.globalPos() - self.clickPos)
     
-    @pyqtSlot()
-    def on_stopSkPushButton_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        self.xtxTimer.stop()
-        self.shuaLabel.setText('')
-        self.kcmcLineEdit.setEnabled(True)
-        self.startSkPushButton.setEnabled(True)
+
 
 
         
