@@ -1105,7 +1105,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Slot documentation goes here.
         """
         self.xtxTimer.stop()
-        self.shuaLabel.setText('')
+        self.shuaLabel.setText('刷课信息')
+        self.kcmcLineEdit.setText('')
         self.xtxTableView.setEnabled(True)
         self.kcmcLineEdit.setEnabled(True)
         self.startSkPushButton.setEnabled(True)
@@ -1153,24 +1154,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot()
     def shua(self):
-        self.t = shuaThread(self.shuake, ())
-        self.kcmcLineEdit.setEnabled(False)
-        self.startSkPushButton.setEnabled(False)
-        self.timeOfShua = 0
-        self.xtxTimer.start(4000)
-    
-    @pyqtSlot()
-    def shuaAgain(self):
-        self.t.quit()
-        self.timeOfShua += 1
-        self.shuaLabel.setText('第'+str(self.timeOfShua)+'遍刷课,'+'反馈信息:'+self.xtxParser.xtxError)
-        self.t.start()
-
-    def shuake(self):
-        self.xtxTableView.setEnabled(False)
         item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
         self.eventTagrget = ''
-        plBody = {'__EVENTTARGET':self.eventTagrget, 
+        shuakeBody = {'__EVENTTARGET':self.eventTagrget, 
                        '__EVENTARGUMENT':'', 
                        '__VIEWSTATE':self.xtxParser.userViewState, 
                        'ddl_kcxz':'', 
@@ -1183,11 +1169,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                        'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
                        'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
                        'Button1': '  �ύ  '}
-        plBody = urllib.parse.urlencode(query = plBody)
-        plBody = plBody.encode('ISO-8859-1')
-        plHeaders = {'Host':'jw2005.scuteo.com',
+        shuakeBody = urllib.parse.urlencode(query = shuakeBody)
+        shuakeBody = shuakeBody.encode('ISO-8859-1')
+        shuakeHeaders = {'Host':'jw2005.scuteo.com',
                            'Connection':'keep-alive',
-                           'Content-Length':len(plBody),
+                           'Content-Length':len(shuakeBody),
                        'Cache-Control':'max-age=0',
                        'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                        'Origin':'http://jw2005.scuteo.com',
@@ -1198,15 +1184,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                        'Accept-Language':'zh-CN,zh;q=0.8',
                        'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
                        'Cookie':self.userCookie}
-        plReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = plBody, headers = plHeaders)
+        self.shuakeReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = shuakeBody, headers = shuakeHeaders)
+
+        self.t = shuaThread(self.shuake, ())
+        self.kcmcLineEdit.setEnabled(False)
+        self.xtxTableView.setEnabled(False)
+        self.startSkPushButton.setEnabled(False)
+        self.timeOfShua = 0
+        self.xtxTimer.start(4000)
+    
+    @pyqtSlot()
+    def shuaAgain(self):
+        self.t.quit()
+        self.timeOfShua += 1
+        self.shuaLabel.setText('第'+str(self.timeOfShua)+'遍刷课,'+'反馈信息:'+self.xtxParser.xtxError)
+        self.t.start()
+
+    def shuake(self):
         try :
-            plData = urllib.request.urlopen(url = plReq, timeout = 6)
+            shuakeData = urllib.request.urlopen(url = self.shuakeReq, timeout = 6)
         except urllib.error.HTTPError as e:
             self.loginError = e.getcode()
             print(self.loginError)
         else:
             self.xtxParser = XtxParser()
-            self.xtxParser.feed(plData.read().decode('gb2312'))
+            self.xtxParser.feed(shuakeData.read().decode('gb2312'))
             if self.xtxParser.xtxError == '':
                 self.on_stopSkPushButton_clicked()
                 self.Tx = []

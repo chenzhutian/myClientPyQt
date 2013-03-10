@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'D:\Users\unhealthy\Documents\GitHub\myClientPyQt\BrowerserWidgetMainPageQt.ui'
 #
-# Created: Sun Mar 10 13:47:06 2013
+# Created: Sun Mar 10 17:59:39 2013
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -705,6 +705,9 @@ class Ui_MainWindow(object):
         font.setFamily(_fromUtf8("微软雅黑"))
         font.setPointSize(10)
         self.startSkPushButton.setFont(font)
+        self.startSkPushButton.setAutoDefault(False)
+        self.startSkPushButton.setDefault(True)
+        self.startSkPushButton.setFlat(False)
         self.startSkPushButton.setObjectName(_fromUtf8("startSkPushButton"))
         self.horizontalLayout_11.addWidget(self.startSkPushButton)
         self.kcmcLabel = QtGui.QLabel(self.skGroupBox)
@@ -945,6 +948,14 @@ class Ui_MainWindow(object):
         self.userImformationLabel.setBuddy(self.cjTabelView)
         self.xnOpptionLabel.setBuddy(self.xnOpptionComboBox)
         self.xqOpptionLabel.setBuddy(self.xqOpptionComboBox)
+        self.label_2.setBuddy(self.kcgsComboBox)
+        self.label_4.setBuddy(self.ywylComboBox)
+        self.label_3.setBuddy(self.sksjComboBox)
+        self.kcmcLabel.setBuddy(self.kcmcLineEdit)
+        self.label_8.setBuddy(self.tComboBox)
+        self.label_11.setBuddy(self.tComboBox)
+        self.label_9.setBuddy(self.yComboBox)
+        self.label_10.setBuddy(self.yComboBox)
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(5)
@@ -996,9 +1007,11 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "上课时间", None))
         self.skGroupBox.setTitle(_translate("MainWindow", "刷课", None))
         self.startSkPushButton.setText(_translate("MainWindow", "搜索", None))
+        self.startSkPushButton.setShortcut(_translate("MainWindow", "Return", None))
         self.kcmcLabel.setText(_translate("MainWindow", "课程名称", None))
         self.shuaLabel.setText(_translate("MainWindow", "刷课信息：", None))
         self.stopSkPushButton.setText(_translate("MainWindow", "停止刷课", None))
+        self.stopSkPushButton.setShortcut(_translate("MainWindow", "Esc", None))
         self.xtxImformationLabel.setText(_translate("MainWindow", "总共有多少条", None))
         self.label_8.setText(_translate("MainWindow", "每页显示", None))
         self.label_11.setText(_translate("MainWindow", "条", None))

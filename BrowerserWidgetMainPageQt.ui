@@ -1476,6 +1476,9 @@
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
                     </property>
+                    <property name="buddy">
+                     <cstring>kcgsComboBox</cstring>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -1536,6 +1539,9 @@
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
                     </property>
+                    <property name="buddy">
+                     <cstring>ywylComboBox</cstring>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -1589,6 +1595,9 @@
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="buddy">
+                     <cstring>sksjComboBox</cstring>
                     </property>
                    </widget>
                   </item>
@@ -1688,6 +1697,18 @@
                     <property name="text">
                      <string>搜索</string>
                     </property>
+                    <property name="shortcut">
+                     <string>Return</string>
+                    </property>
+                    <property name="autoDefault">
+                     <bool>false</bool>
+                    </property>
+                    <property name="default">
+                     <bool>true</bool>
+                    </property>
+                    <property name="flat">
+                     <bool>false</bool>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -1706,6 +1727,9 @@
                     </property>
                     <property name="text">
                      <string>课程名称</string>
+                    </property>
+                    <property name="buddy">
+                     <cstring>kcmcLineEdit</cstring>
                     </property>
                    </widget>
                   </item>
@@ -1783,6 +1807,9 @@
                     </property>
                     <property name="text">
                      <string>停止刷课</string>
+                    </property>
+                    <property name="shortcut">
+                     <string>Esc</string>
                     </property>
                    </widget>
                   </item>
@@ -1945,6 +1972,9 @@
                      <property name="text">
                       <string>每页显示</string>
                      </property>
+                     <property name="buddy">
+                      <cstring>tComboBox</cstring>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -1960,6 +1990,9 @@
                      </property>
                      <property name="text">
                       <string>条</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>tComboBox</cstring>
                      </property>
                     </widget>
                    </item>
@@ -2020,6 +2053,9 @@
                      <property name="text">
                       <string>第</string>
                      </property>
+                     <property name="buddy">
+                      <cstring>yComboBox</cstring>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -2035,6 +2071,9 @@
                      </property>
                      <property name="text">
                       <string>页</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>yComboBox</cstring>
                      </property>
                     </widget>
                    </item>
