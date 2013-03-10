@@ -797,60 +797,60 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.oldIndex2 = QModelIndex(index)
         button.setEnabled(True)
         
-    @pyqtSlot()
-    def pickThisLesson(self):
-        self.xtxThread.setThread(self.pickLesson, (), self.pickLesson.__name__, 2)
-        self.xtxThread.start()
-        self.xtxProgressBar.setVisible(True)
-        self.xtxProgressBar.setValue(10)
-        for i in range(24, 90):
-            if self.xtxProgressBar.value() == 100:
-                break
-            self.xtxProgressBar.setValue(i)
-            QThread.msleep (30)
-    
-    def pickLesson(self):
-        item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
-        self.eventTagrget = ''
-        plBody = {'__EVENTTARGET':self.eventTagrget, 
-        '__EVENTARGUMENT':'', 
-        '__VIEWSTATE':self.xtxParser.userViewState, 
-        'ddl_kcxz':'', 
-        'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
-        'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
-        'ddl_xqbs':self.xtxParser.xqbs, 
-        'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
-        'TextBox1':'', 
-        item.text():'on', 
-        'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
-        'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
-        'dpDataGrid2:AtxtChoosePage':'1', 
-        'dpDataGrid2:AtxtPageSize':'150', 
-        'Button1': '  �ύ  '}
-        plBody = urllib.parse.urlencode(query = plBody)
-        plBody = plBody.encode('ISO-8859-1')
-        plHeaders = {'Host':'jw2005.scuteo.com',
-                           'Connection':'keep-alive',
-                           'Content-Length':len(plBody),
-                           'Cache-Control':'max-age=0',
-                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                           'Origin':'http://jw2005.scuteo.com',
-                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
-                           'Content-Type':'application/x-www-form-urlencoded',
-                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
-                           'Accept-Encoding':'gzip,deflate,sdch',
-                           'Accept-Language':'zh-CN,zh;q=0.8',
-                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
-                           'Cookie':self.userCookie}
-        plReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = plBody, headers = plHeaders)
-        try :
-            plData = urllib.request.urlopen(url = plReq)
-        except urllib.error.HTTPError as e:
-            self.loginError = e.getcode()
-            print(self.loginError)
-        else:
-            self.xtxParser = XtxParser()
-            self.xtxParser.feed(plData.read().decode('gb2312'))
+#    @pyqtSlot()
+#    def pickThisLesson(self):
+#        self.xtxThread.setThread(self.pickLesson, (), self.pickLesson.__name__, 2)
+#        self.xtxThread.start()
+#        self.xtxProgressBar.setVisible(True)
+#        self.xtxProgressBar.setValue(10)
+#        for i in range(24, 90):
+#            if self.xtxProgressBar.value() == 100:
+#                break
+#            self.xtxProgressBar.setValue(i)
+#            QThread.msleep (30)
+#    
+#    def pickLesson(self):
+#        item = self.xtxTable.item(self.xtxTableView.currentIndex().row(), 0)
+#        self.eventTagrget = ''
+#        plBody = {'__EVENTTARGET':self.eventTagrget, 
+#        '__EVENTARGUMENT':'', 
+#        '__VIEWSTATE':self.xtxParser.userViewState, 
+#        'ddl_kcxz':'', 
+#        'ddl_ywyl':self.xtxParser.currentYwyl.encode('gb2312'), 
+#        'ddl_kcgs':self.xtxParser.currentKcgs.encode('gb2312'), 
+#        'ddl_xqbs':self.xtxParser.xqbs, 
+#        'ddl_sksj':self.xtxParser.currentSksj.encode('gb2312'), 
+#        'TextBox1':'', 
+#        item.text():'on', 
+#        'dpkcmcGrid:txtChoosePage':self.xtxParser.currentPage,  
+#        'dpkcmcGrid:txtPageSize':self.xtxParser.currentMyxs, 
+#        'dpDataGrid2:AtxtChoosePage':'1', 
+#        'dpDataGrid2:AtxtPageSize':'150', 
+#        'Button1': '  �ύ  '}
+#        plBody = urllib.parse.urlencode(query = plBody)
+#        plBody = plBody.encode('ISO-8859-1')
+#        plHeaders = {'Host':'jw2005.scuteo.com',
+#                           'Connection':'keep-alive',
+#                           'Content-Length':len(plBody),
+#                           'Cache-Control':'max-age=0',
+#                           'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+#                           'Origin':'http://jw2005.scuteo.com',
+#                           'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17',
+#                           'Content-Type':'application/x-www-form-urlencoded',
+#                           'Referer':self.mainUrl+self.menuPath.xgxkxk,
+#                           'Accept-Encoding':'gzip,deflate,sdch',
+#                           'Accept-Language':'zh-CN,zh;q=0.8',
+#                           'Accept-Charset':'GBK,utf-8;q=0.7,*;q=0.3',
+#                           'Cookie':self.userCookie}
+#        plReq = urllib.request.Request(url =self.mainUrl+self.menuPath.xgxkxk,data = plBody, headers = plHeaders)
+#        try :
+#            plData = urllib.request.urlopen(url = plReq)
+#        except urllib.error.HTTPError as e:
+#            self.loginError = e.getcode()
+#            print(self.loginError)
+#        else:
+#            self.xtxParser = XtxParser()
+#            self.xtxParser.feed(plData.read().decode('gb2312'))
 
     @pyqtSlot()
     def dropThisLesson(self):
@@ -1777,6 +1777,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def mouseMoveEvent(self, e):
         self.move(e.globalPos() - self.clickPos)
+    
+    @pyqtSlot()
+    def on_aboutToolButton_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        QMessageBox.about(self,'联系作者', 'sina.Weibo：@我叫陈竹天\n chenzhutian1992@gmail.com \n gitHub： unhealthy')
     
 
 
